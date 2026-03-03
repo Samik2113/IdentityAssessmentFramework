@@ -151,7 +151,9 @@ jobs:
               --resource-group "$ENV_RG" \
               --server "$ENV_SQL_SERVER" \
               --compute-model Serverless \
-              --service-objective GP_S_Gen5_1 \
+              --edition GeneralPurpose \
+              --family Gen5 \
+              --capacity 1 \
               --output none
 
             echo "Allowing Azure services through SQL firewall..."
