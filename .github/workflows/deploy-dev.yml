@@ -14,10 +14,10 @@ env:
   ENV_RG: rg-iam-dev
   ENV_LOCATION: centralindia
   ENV_PLAN: plan-iam-dev
-  ENV_API_APP: ${{ vars.ENV_API_APP }}
-  ENV_WEB_APP: ${{ vars.ENV_WEB_APP }}
-  ENV_SQL_SERVER: ${{ vars.ENV_SQL_SERVER }}
-  ENV_SQL_DB: ${{ vars.ENV_SQL_DB || 'iamdb-dev' }}
+  ENV_API_APP: iam-api-dev-eg586yn2603
+  ENV_WEB_APP: iam-web-dev-eg586yn2603
+  ENV_SQL_SERVER: iamsqldeveg586yn2603
+  ENV_SQL_DB: iamdb-dev
 
 jobs:
   build_test_publish:
