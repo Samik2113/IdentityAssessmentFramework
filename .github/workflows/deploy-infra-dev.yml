@@ -11,10 +11,10 @@ env:
   ENV_RG: rg-iam-dev
   ENV_LOCATION: centralindia
   ENV_PLAN: plan-iam-dev
-  ENV_API_APP: iam-api-dev-<unique>
-  ENV_WEB_APP: iam-web-dev-<unique>
-  ENV_SQL_SERVER: iam-sql-dev-<unique>
-  ENV_SQL_DB: iamdb-dev
+  ENV_API_APP: ${{ vars.ENV_API_APP }}
+  ENV_WEB_APP: ${{ vars.ENV_WEB_APP }}
+  ENV_SQL_SERVER: ${{ vars.ENV_SQL_SERVER }}
+  ENV_SQL_DB: ${{ vars.ENV_SQL_DB || 'iamdb-dev' }}
 
 jobs:
   deploy_infra:
@@ -22,6 +22,35 @@ jobs:
     environment: dev
 
     steps:
+      - name: Validate required environment variables
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required=(ENV_API_APP ENV_WEB_APP ENV_SQL_SERVER)
+          for variable in "${required[@]}"; do
+            value="${!variable:-}"
+            if [ -z "$value" ]; then
+              echo "Missing required GitHub Environment variable: $variable"
+              exit 1
+            fi
+          done
+
+          for variable in ENV_API_APP ENV_WEB_APP; do
+            value="${!variable}"
+            if [[ ! "$value" =~ ^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$ ]]; then
+              echo "$variable has invalid app name format: $value"
+              echo "App Service names must be 1-63 chars, alphanumeric or hyphen, and not start/end with hyphen."
+              exit 1
+            fi
+          done
+
+          if [[ ! "$ENV_SQL_SERVER" =~ ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+            echo "ENV_SQL_SERVER has invalid SQL server name format: $ENV_SQL_SERVER"
+            echo "SQL server names must be 1-63 chars, lowercase letters/numbers/hyphen, and not start/end with hyphen."
+            exit 1
+          fi
+
       - name: Azure login (OIDC)
         uses: azure/login@v2
         with:
