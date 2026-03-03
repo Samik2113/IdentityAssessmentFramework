@@ -29,14 +29,14 @@ jobs:
 
           for variable in ENV_API_APP ENV_WEB_APP; do
             value="${!variable}"
-            if [[ ! "$value" =~ ^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$ ]]; then
+            if [[ ! "$value" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?$ ]]; then
               echo "$variable has invalid app name format: $value"
               echo "App Service names must be 1-63 chars, alphanumeric or hyphen, and not start/end with hyphen."
               exit 1
             fi
           done
 
-          if [[ ! "$ENV_SQL_SERVER" =~ ^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+          if [[ ! "$ENV_SQL_SERVER" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
             echo "ENV_SQL_SERVER has invalid SQL server name format: $ENV_SQL_SERVER"
             echo "SQL server names must be 1-63 chars, lowercase letters/numbers/hyphen, and not start/end with hyphen."
             exit 1
