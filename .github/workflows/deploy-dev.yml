@@ -1,0 +1,144 @@
+name: Deploy Dev
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ENV_RG: rg-iam-dev
+  ENV_LOCATION: centralindia
+  ENV_PLAN: plan-iam-dev
+  ENV_API_APP: iam-api-dev-<unique>
+  ENV_WEB_APP: iam-web-dev-<unique>
+  ENV_SQL_SERVER: iam-sql-dev-<unique>
+  ENV_SQL_DB: iamdb-dev
+
+jobs:
+  build_test_publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [IamMaturityStudio.Api, IamMaturityStudio.Web]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
+
+      - name: Restore
+        working-directory: IamMaturityStudio
+        run: dotnet restore
+
+      - name: Build
+        working-directory: IamMaturityStudio
+        run: dotnet build --configuration Release
+
+      - name: Test
+        working-directory: IamMaturityStudio
+        run: dotnet test --configuration Release --no-build
+
+      - name: Publish
+        working-directory: IamMaturityStudio
+        run: dotnet publish ./${{ matrix.project }}/${{ matrix.project }}.csproj -c Release -o ${{ runner.temp }}/${{ matrix.project }}_publish
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.project }}-artifact
+          path: ${{ runner.temp }}/${{ matrix.project }}_publish
+
+  deploy_api:
+    runs-on: ubuntu-latest
+    needs: build_test_publish
+    environment: dev
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Download API artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: IamMaturityStudio.Api-artifact
+          path: ${{ runner.temp }}/api
+
+      - name: Deploy API
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.ENV_API_APP }}
+          package: ${{ runner.temp }}/api
+
+      - name: Setup .NET 8 for migrations
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
+
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef
+
+      - name: Restore for migrations
+        working-directory: IamMaturityStudio
+        run: dotnet restore
+
+      - name: Apply EF migrations
+        working-directory: IamMaturityStudio
+        run: |
+          dotnet ef database update \
+            --project IamMaturityStudio.Infrastructure \
+            --startup-project IamMaturityStudio.Api \
+            --connection "${{ secrets.SQL_MIGRATIONS_CONNECTION }}"
+
+      - name: Warmup ping API health/db
+        run: curl -fsS "https://${{ env.ENV_API_APP }}.azurewebsites.net/health/db"
+
+  deploy_web:
+    runs-on: ubuntu-latest
+    needs: build_test_publish
+    environment: dev
+
+    steps:
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Download WEB artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: IamMaturityStudio.Web-artifact
+          path: ${{ runner.temp }}/web
+
+      - name: Deploy WEB
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.ENV_WEB_APP }}
+          package: ${{ runner.temp }}/web
+
+      - name: Set WEB API base URL setting
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              --resource-group "$ENV_RG" \
+              --name "$ENV_WEB_APP" \
+              --settings WEB__ApiBaseUrl="https://${ENV_API_APP}.azurewebsites.net" \
+              --output none

@@ -1,0 +1,143 @@
+name: Deploy Infra Dev
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ENV_RG: rg-iam-dev
+  ENV_LOCATION: centralindia
+  ENV_PLAN: plan-iam-dev
+  ENV_API_APP: iam-api-dev-<unique>
+  ENV_WEB_APP: iam-web-dev-<unique>
+  ENV_SQL_SERVER: iam-sql-dev-<unique>
+  ENV_SQL_DB: iamdb-dev
+
+jobs:
+  deploy_infra:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Provision/update Azure resources
+        uses: azure/cli@v2
+        env:
+          SQL_ADMIN_LOGIN: ${{ secrets.SQL_ADMIN_LOGIN }}
+          SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
+        with:
+          inlineScript: |
+            set -euo pipefail
+
+            echo "Creating resource group..."
+            az group create --name "$ENV_RG" --location "$ENV_LOCATION" --output none
+
+            echo "Creating or reusing Linux App Service Plan..."
+            if ! az appservice plan show --name "$ENV_PLAN" --resource-group "$ENV_RG" >/dev/null 2>&1; then
+              az appservice plan create \
+                --name "$ENV_PLAN" \
+                --resource-group "$ENV_RG" \
+                --location "$ENV_LOCATION" \
+                --is-linux \
+                --sku B1 \
+                --output none
+            fi
+
+            echo "Creating or reusing API App Service..."
+            if ! az webapp show --name "$ENV_API_APP" --resource-group "$ENV_RG" >/dev/null 2>&1; then
+              az webapp create \
+                --name "$ENV_API_APP" \
+                --resource-group "$ENV_RG" \
+                --plan "$ENV_PLAN" \
+                --runtime "DOTNET|8.0" \
+                --output none
+            fi
+
+            echo "Creating or reusing WEB App Service..."
+            if ! az webapp show --name "$ENV_WEB_APP" --resource-group "$ENV_RG" >/dev/null 2>&1; then
+              az webapp create \
+                --name "$ENV_WEB_APP" \
+                --resource-group "$ENV_RG" \
+                --plan "$ENV_PLAN" \
+                --runtime "DOTNET|8.0" \
+                --output none
+            fi
+
+            echo "Creating or reusing Azure SQL logical server..."
+            if ! az sql server show --name "$ENV_SQL_SERVER" --resource-group "$ENV_RG" >/dev/null 2>&1; then
+              az sql server create \
+                --name "$ENV_SQL_SERVER" \
+                --resource-group "$ENV_RG" \
+                --location "$ENV_LOCATION" \
+                --admin-user "$SQL_ADMIN_LOGIN" \
+                --admin-password "$SQL_ADMIN_PASSWORD" \
+                --output none
+            fi
+
+            echo "Creating or updating Azure SQL database (serverless GP_S_Gen5_1)..."
+            az sql db create \
+              --name "$ENV_SQL_DB" \
+              --resource-group "$ENV_RG" \
+              --server "$ENV_SQL_SERVER" \
+              --compute-model Serverless \
+              --service-objective GP_S_Gen5_1 \
+              --output none
+
+            echo "Allowing Azure services through SQL firewall..."
+            az sql server firewall-rule create \
+              --resource-group "$ENV_RG" \
+              --server "$ENV_SQL_SERVER" \
+              --name AllowAzureServices \
+              --start-ip-address 0.0.0.0 \
+              --end-ip-address 0.0.0.0 \
+              --output none
+
+            API_CONN_STRING="Server=tcp:${ENV_SQL_SERVER}.database.windows.net,1433;Initial Catalog=${ENV_SQL_DB};Persist Security Info=False;User ID=${SQL_ADMIN_LOGIN};Password=${SQL_ADMIN_PASSWORD};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+
+            echo "Setting API app settings..."
+            az webapp config appsettings set \
+              --resource-group "$ENV_RG" \
+              --name "$ENV_API_APP" \
+              --settings \
+                ASPNETCORE_ENVIRONMENT=Production \
+                ConnectionStrings__Default="$API_CONN_STRING" \
+              --output none
+
+            echo "Setting WEB app settings..."
+            az webapp config appsettings set \
+              --resource-group "$ENV_RG" \
+              --name "$ENV_WEB_APP" \
+              --settings \
+                ASPNETCORE_ENVIRONMENT=Production \
+                WEB__ApiBaseUrl="https://${ENV_API_APP}.azurewebsites.net" \
+              --output none
+
+            RG_ID=$(az group show --name "$ENV_RG" --query id -o tsv)
+            API_ID=$(az webapp show --name "$ENV_API_APP" --resource-group "$ENV_RG" --query id -o tsv)
+            WEB_ID=$(az webapp show --name "$ENV_WEB_APP" --resource-group "$ENV_RG" --query id -o tsv)
+            SQL_SERVER_ID=$(az sql server show --name "$ENV_SQL_SERVER" --resource-group "$ENV_RG" --query id -o tsv)
+            SQL_DB_ID=$(az sql db show --name "$ENV_SQL_DB" --resource-group "$ENV_RG" --server "$ENV_SQL_SERVER" --query id -o tsv)
+
+            {
+              echo "## Dev infrastructure summary"
+              echo "- Resource Group: $RG_ID"
+              echo "- API App: $API_ID"
+              echo "- WEB App: $WEB_ID"
+              echo "- SQL Server: $SQL_SERVER_ID"
+              echo "- SQL Database: $SQL_DB_ID"
+              echo "- API URL: https://${ENV_API_APP}.azurewebsites.net"
+              echo "- WEB URL: https://${ENV_WEB_APP}.azurewebsites.net"
+              echo ""
+              echo "> NOTE: Azure SQL free offer is applied via Azure Portal UI (Try for free)."
+              echo "> After provisioning, open the SQL Database blade and verify free offer is applied."
+              echo "> If needed, re-create the DB via portal with free offer enabled."
+            } >> "$GITHUB_STEP_SUMMARY"
