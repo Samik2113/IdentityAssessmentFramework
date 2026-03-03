@@ -4,6 +4,7 @@ using Azure.Storage.Blobs;
 using IamMaturityStudio.Application.Interfaces;
 using IamMaturityStudio.Infrastructure.Persistence;
 using IamMaturityStudio.Infrastructure.Persistence.Repositories;
+using IamMaturityStudio.Infrastructure.Seeding;
 using IamMaturityStudio.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -19,6 +20,7 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
         services.AddScoped<IAssessmentRepository, AssessmentRepository>();
+        services.AddScoped<IQuestionnaireSeedImporter, QuestionnaireSeedImporter>();
 
         var blobServiceUri = configuration["Azure:BlobServiceUri"];
         if (!string.IsNullOrWhiteSpace(blobServiceUri))

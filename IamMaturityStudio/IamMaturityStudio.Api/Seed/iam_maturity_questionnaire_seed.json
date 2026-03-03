@@ -1,0 +1,1024 @@
+{
+  "questionnaire": {
+    "name": "Digital Identity Framework v1",
+    "domains": [
+      {
+        "code": "IAM",
+        "name": "Identity & Access Management",
+        "categories": [
+          {
+            "code": "IAM-IDENTITY-GOVERNANC",
+            "name": "Identity Governance",
+            "weight": 0.0,
+            "business_risk": "Operational risk of not having control to recover from any fraud or cyber attack due to lack of complete visibility of users with business roles and access privileges.\n\nProgram and competitive risk due to lack of control over operation especially over revenue generation applications.",
+            "questions": [
+              {
+                "code": "IAM-IDENTITY-GOVERNANC-001",
+                "text": "Do you have IAM framework deployed within the organization with role based access control ( RBAC), JML (Joiner, Mover, leaver), segregation of duties (SoD) implementation to manage user accounts access and controls?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-GOVERNANC-002",
+                "text": "Do you have any governing body to oversee the approach across enterprise for users and their access Management?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-GOVERNANC-003",
+                "text": "Does the organization sufficiently staffed with skilled and certified resources to manage IAM operations and technical support?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-GOVERNANC-004",
+                "text": "Do you have well defined and documented user access management approach to perform periodic audits/certifications to verify that users are compliant have been provisioned required access only?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-GOVERNANC-005",
+                "text": "Do service level agreements (SLA's) exists for governing the performance of users and their access management process?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-GOVERNANC-006",
+                "text": "Do you maintain a centralised inventory of users ( employees, contractors or external partners) and their respective data associated within your system?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-GOVERNANC-007",
+                "text": "Are there formalised legal and contractual frameworks defined for Federation that enables accessing the applications/ resources/ systems by external business partners?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "IAM-IDENTITY-MANAGEMEN",
+            "name": "Identity Management Policies Enforcement",
+            "weight": 0.0,
+            "business_risk": "Operational risk of not being able to work and govern with standard tools and techniques for not enforcing user onboarding and security access policies.\n\nCompliance Risk as you may not be able to adhere to mandatory regulatory requirements such as ISO27K, PCI/DSS, Data Protection Act etc.",
+            "questions": [
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-001",
+                "text": "Do you have security policies and information security standards enforced to manage user identities lifecycle (creation, modification and deletion) to maintain effective management of user identities?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-002",
+                "text": "Do you have strong password polices documented in terms of password length\\complexity for users to set\\reset passwords ( self- service) in the systems\\applications accounts to maintain industries security standards and to prevent from compromise on password breach?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-003",
+                "text": "Do you have proper policy documented and applied for assignment of approvers\\owners on user accounts for provisioning and de-provisioning of access to follow defined process\\mechanisms of access request?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-004",
+                "text": "Do you have initial passwords creation\\generation policy documented and followed standard process to generate\\set initial passwords across the organization?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-005",
+                "text": "Are there formalised policies, communicated to individuals to ensure compliance for shared  functional accounts?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-006",
+                "text": "Are there industry standards and policies in place to govern the distribution of authenticators?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "IAM-IDENTITY-MANAGEMEN",
+            "name": "Identity Management Processes",
+            "weight": 0.0,
+            "business_risk": "Commercial risk or reputational risk as  any identity or access exploitation would lead to larger commercial loss and damage to repute due to lack of process and control implementation.",
+            "questions": [
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-001",
+                "text": "Are processes for access management and administration of identity profile data defined, documented, communicated, trained, and enforced?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-002",
+                "text": "Are there any authenticators used in your systems? If yes, are there standardised processes for the disposal of authenticators (Secure ID, tokens, etc.)? Are these documented and communicated?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-003",
+                "text": "Are there formalised change management processes for the assignment of new resource owners / approvers?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-004",
+                "text": "Are access policies, including segregation of duties, considered during the access review and certification process?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-005",
+                "text": "Do standard provisioning/ de-provisioning processes exist for creating/ disabling account IDs? Do you use authenticated application source in order to  get all identity data?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-006",
+                "text": "Is there a standard process for the update of global and account ID's?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-007",
+                "text": "Do you have shared functional accounts? If yes, is there a defined process to manage the shared accounts and has that been communicated to the users?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-MANAGEMEN-008",
+                "text": "Do you have process defined and tested to enable emergency access in case of network blockage, natural disaster, severity etc.?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "IAM-IDENTITY-AUTHENTIC",
+            "name": "Identity Authentication",
+            "weight": 0.0,
+            "business_risk": "Commercial risk, strategy risk and competitive risk due to non-standard approach for access management will lead to poor user experience. This along with compromised assets due to lack of access control would lead to commercial loss.",
+            "questions": [
+              {
+                "code": "IAM-IDENTITY-AUTHENTIC-001",
+                "text": "Are there policies or guidelines dictating the type or strength of authentication required for accessing resources?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-AUTHENTIC-002",
+                "text": "Does a centralized system for authentication exist in your enterprise?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-AUTHENTIC-003",
+                "text": "Is authorization of identities handled by applications themselves?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-AUTHENTIC-004",
+                "text": "Are user id and passwords being stored in AD or any other repository securely?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-AUTHENTIC-005",
+                "text": "Are identified sensitive applications protected by multi factor authentication? (e.g. OTP)",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "IAM-IDENTITY-ACCESS-MA",
+            "name": "Identity Access Management",
+            "weight": 0.0,
+            "business_risk": "Operational risk due to  lack of visibility of access privileges. This may lead to internal fraud and commercial loss. \n\nCompliance risk as you may not be able to provide evidences on who accessed what and at what time to internal/external auditor. Non-compliance carries penalties and loss of repute.",
+            "questions": [
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-001",
+                "text": "Do you have well defined JML( Joiner, Mover, Leaver) process for employees and  contractors ?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-002",
+                "text": "Do you have certifications scheduled to manage and audit user access? If yes, do you make use of any custom reports to perform audits?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-003",
+                "text": "Do you have Role Based Access Control implemented and enforced to provisioning \\de-provisioning of access for users within the organization? If yes, is process for role management defined?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-004",
+                "text": "Do you have Roles defined to cater segregation of duties in order to provision access within the organization for internal and external users (vendors, auditors)?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-005",
+                "text": "Is there real time data synchronisation in place between the applications to regulate and reflect provisioning/ de-provisioning access for users?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-006",
+                "text": "Is there a standard unique identifier (Global ID) associated with all classes of users (e.g., employees, contractors, etc.) requiring logical access to your resources?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-007",
+                "text": "Is it possible to correlate account ID(s) across all systems and applications with the Global ID? Is this a simple (possible using data analysis tools) or complex (requires significant manual effort) process?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-008",
+                "text": "Are there approvals defined for getting the required access provisioned to the users in the application ?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "IAM-IDENTITY-ACCESS-MA-009",
+                "text": "Do you have emergency access implemented to access an underlying application system with specific user accounts in case of network blockage, natural disaster, severity etc.?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "code": "PIM",
+        "name": "Privileged Access Management",
+        "categories": [
+          {
+            "code": "PIM-PRIVILEGED-IDENTIT",
+            "name": "Privileged Identity Governance",
+            "weight": 0.0,
+            "business_risk": "Operational risk of not having control to recover from any fraud or cyber attack due to Internal threat. \n\nProgram and competitive risk due to lack of control over access control for sensitive applications, servers and network elements over.",
+            "questions": [
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-001",
+                "text": "Do you have PIM framework\\structure deployed within the organization to manage privileged accounts access and controls?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-002",
+                "text": "Do you have proper governing body defined and followed to oversee the approach across Enterprise for Privileged accounts and their Privileged access Management?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-003",
+                "text": "Does the organization sufficiently staffed with skilled and certified resources to manage PIM operations and technical support?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-004",
+                "text": "Do Service Level Agreements (SLA's) exists for governing the performance of privileged users and their access Management process?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-005",
+                "text": "Do you perform periodic internal reviews\\audit of PIM application configurations and data to manage streamlined polices and standards?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-006",
+                "text": "Do you generate reports periodically to review, verify and check compliance status of all privileged accounts and their transactional records with respect to activities performed and share\\submit via email to administrators\\management team?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "PIM-PRIVILEGED-POLICIE",
+            "name": "Privileged Policies Enforcement",
+            "weight": 0.0,
+            "business_risk": "Operational risk of not being able to enforce security policies over accessing systems and eliminating shared password usage work which can lead to risk of \"internal threat\" which can have very high impact on your organization.\n\nCompliance Risk as you may not be able to adhere to mandatory regulatory requirements such as ISO27K, PCI/DSS, Data Protection Act etc.",
+            "questions": [
+              {
+                "code": "PIM-PRIVILEGED-POLICIE-001",
+                "text": "Do you have policies and standards documented and enforced to manage privileged accounts lifecycle (the process flow of how a privileged account is created, managed, and deleted) to maintain effective management of privileged accounts?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-POLICIE-002",
+                "text": "Do you have strong password polices documented in terms of password length\\complexity for users to set\\reset passwords in the systems\\applications privileged accounts to maintain industries security standards and to prevent from compromise on password breach?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-POLICIE-003",
+                "text": "Do you have proper policy documented and applied using PIM solution for assignment of approvers\\owners on privileged accounts to assign owner responsibilities for access provisioning and de-provisioning and modification of respective privileged accounts?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-POLICIE-004",
+                "text": "Do you have policy configured to restrict access to all applications, systems, databases, network devices from back-end (back-office) and allowed access only from PIM tool?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-POLICIE-005",
+                "text": "Do you have policy configured and applied on all the privileged accounts to disable show password and should be shared in secured way to the end users based on the approval and proper requirement justification?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-POLICIE-006",
+                "text": "Do you have policy configured and enforced on all the privileged accounts to automatic change passwords periodically as per the policies and standards defined\\documented in the organization?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-POLICIE-007",
+                "text": "Do you have initial passwords creation\\generation policy documented and followed standard process to generate\\set initial passwords in the system's privileged accounts across the organization?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "PIM-PRIVILEGED-IDENTIT",
+            "name": "Privileged Identity Management Processes",
+            "weight": 0.0,
+            "business_risk": "Commercial risk and reputational risk due to lack of process and control implementation may lead to privilege access exploitation that would lead to larger commercial loss and  damage to repute.",
+            "questions": [
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-001",
+                "text": "Do you follow process to maintain an up-to-date inventory of all privileged accounts (included in PIM as well as not included in PIM)?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-002",
+                "text": "Do you follow a defined process to review access rights of privileged users and groups at appropriate intervals (at least once a quarter) and regularly review privileged permissions assignment?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-003",
+                "text": "Do you have process defined and followed to create privileged identities and privileged access assignment to external users\\vendors\\auditors?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-004",
+                "text": "Do you have approval based process (approval of more than one individual (maker-checker) enforced to update\\provision\\de-provision employee access?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-005",
+                "text": "Do you have defined change management process followed to make any changes like (upgrade, configuration modification, recovery during natural disaster etc.) in live\\production environment?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-006",
+                "text": "Do you have process defined and tested to enable emergency access on privileged accounts in case of network blockage, natural disaster, severity etc.?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "PIM-PRIVILEGED-IDENTIT",
+            "name": "Privileged Identity Authentication",
+            "weight": 0.0,
+            "business_risk": "Program risk and reputational risk due to non-standard approach to access sensitive servers and applications. A compromised sensitive asset can bring huge commercial loss and damage to repute.",
+            "questions": [
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-001",
+                "text": "Do you have implemented appropriate authentication method (privileged user ID and password to login) to authenticate PIM application for privileged users to verify their user identities?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-002",
+                "text": "Do you have configured Multi-factor authentication (security system that requires more than one method of authentication from independent categories of credentials to verify the user's identity for a login, for Ex. password, token, OTP, fingerprints, face recognition etc.) or Single Sign On (an authentication process that allows a user to access multiple applications with one set of login credentials) authentication for privileged users to login into PIM?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-IDENTIT-003",
+                "text": "Do you have strong authentication method (Two-factor or Multi-factor) configured for internal\\external privileged users to access PIM application through web portals, mobile apps from remote location and VPN connection?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "PIM-PRIVILEGED-ACCESS-",
+            "name": "Privileged Access Management",
+            "weight": 0.0,
+            "business_risk": "Program risk and commercial risk due lack of controls the management will not have visibility on the access privileges and may lead to internal fraud and financial loss.",
+            "questions": [
+              {
+                "code": "PIM-PRIVILEGED-ACCESS--001",
+                "text": "Do you have Roles defined to cater segregation of duties in order to control\\limit the privileged accounts access in within the organization for internal and external privileged users (vendors, auditors)?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-ACCESS--002",
+                "text": "Do you have Role Based Access Control implemented and enforced to provisioning \\de-provisioning of privileged accounts access for privileged users within the organization?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-ACCESS--003",
+                "text": "Do you have implemented process to allow an authorised access to PIM administrators and auditors on PIM logs, reports & recordings to debug, analyse and monitor system\\applications performance ?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-ACCESS--004",
+                "text": "Do you have emergency access implemented to access an underlying systems of PIM application with specific privileged accounts in order to access systems in case of network blockage, natural disaster, severity etc.?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "PIM-PRIVILEGED-ACCOUNT",
+            "name": "Privileged Accounts Management",
+            "weight": 0.0,
+            "business_risk": "Program risk and reputational risk due to due to lack of access control over high privilege account. It can lead to commercial loss and damage to repute.",
+            "questions": [
+              {
+                "code": "PIM-PRIVILEGED-ACCOUNT-001",
+                "text": "Do you have all the privileged accounts (associated with all platforms including servers, network devices, database, applications etc.) and their passwords are on-boarded, vaulted and encrypted in secured location?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-ACCOUNT-002",
+                "text": "Do you have vaulted and disabled all default accounts (roots and administrators) of all the systems, applications, databases, network devices into secured location?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-ACCOUNT-003",
+                "text": "Is an automatic logging into the privileged account without exposing privileged account passwords\\credentials is configured or not for all the privileged accounts to keep passwords invisible\\secured\\unknown to the privileged end users?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "PIM-PRIVILEGED-ACCOUNT-004",
+                "text": "Do you have vaulted hard-coded privileged accounts (to run automated script or OEM provided utilities to perform particular tasks in PIM applications or in servers) and service IDs in secured location?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "code": "AD",
+        "name": "Active Directory",
+        "categories": [
+          {
+            "code": "AD-ACTIVE-DIRECTORY-G",
+            "name": "Active Directory Governance",
+            "weight": 0.0,
+            "business_risk": "Program and Operational risk due to lack of control on identities, access details, resources, authorization levels and accountability. You  may not be in position to control the business in case of any fraud or attack. The risk would percolate to each program as AD will be part of each program.",
+            "questions": [
+              {
+                "code": "AD-ACTIVE-DIRECTORY-G-001",
+                "text": "Do you have AD framework\\structure deployed within the organization to manage AD authentication and security controls?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-G-002",
+                "text": "Does the organization sufficiently staffed with skilled resources to manage AD operations?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-G-003",
+                "text": "Do all Active Directories are being known and assigned to an owner accountable for its security?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-G-004",
+                "text": "Do Service Level Agreements (SLA's) exists for governing the Active Directory performance and features availability?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-G-005",
+                "text": "All the approvals provided for different level of access to users are being recorded and retained for a specific period as per the organizations requirement?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-G-006",
+                "text": "Do you store Active Directory logs relevant to all activities and events for specific period of time as per the organizations requirement?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-G-007",
+                "text": "Do you perform periodic internal reviews\\audit of Active Directory configurations and data to manage streamlined polices and standards?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "AD-ACTIVE-DIRECTORY-P",
+            "name": "Active Directory Policies Enforcement",
+            "weight": 0.0,
+            "business_risk": "Program risk due to non standardized way to organize information in AD and provide access capabilities those many not be adequate to control day-to-day operation.\n\nCompliance risk due to lack of control over AD operations and ability to provide evidences to regulatory requirements such as ISO, PCI/DSS, COBIT, Data Protection Act, etc.",
+            "questions": [
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-001",
+                "text": "Do you have policies configured and enforced for initial password generation, password expiry and to send notifications to users via emails?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-002",
+                "text": "Do you have strong password polices documented and enforced in terms of password length\\complexity for users to set\\reset passwords in the systems\\applications accounts, to maintain industries security standards and to prevent from compromise on password breach?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-003",
+                "text": "Do you have standard password change policies documented and enforced across all systems (for example: 45 day forced change, last 12 passwords compared) to maintain compliance?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-004",
+                "text": "Do you have domain policies enforced to harden the workstations within the organization?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-005",
+                "text": "Is there a policy enforced to govern the user accounts in Active Directory are being active or not?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "AD-ACTIVE-DIRECTORY-P",
+            "name": "Active Directory Processes",
+            "weight": 0.0,
+            "business_risk": "Operational risk of fraud, cyber attack, resource compromise due to lack of governance and administration controls for AD.",
+            "questions": [
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-001",
+                "text": "Do you have automated process implemented and enforced to provision and de-provision access for users on different applications within the organization?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-002",
+                "text": "Do you have users and groups lifecycle (creation, modification and deletion) process automated and enforced  to manage identities in Active Directory?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-003",
+                "text": "Do you have process enforced to review permissions and access levels of Active Directory users and groups at appropriate intervals (at least once a quarter)?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-004",
+                "text": "Do you have defined change management process enforced and followed to make any changes in Active Directory like (upgrade\\patch, configuration modification, recovery during natural disaster etc.)?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-005",
+                "text": "Do you have process documented and followed to integrate applications with Active Directory on secured port in order to secure communication between Active Directory and integrated applications in an encrypted format)?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-006",
+                "text": "Do you have process defined and documented with detailed steps of switchover domain controllers to achieve BCP (Business continuity planning) or DR (Disaster Recovery)?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-007",
+                "text": "Do you have process followed to evaluate and recertify AD users, groups and access privileges at the regular frequency?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-ACTIVE-DIRECTORY-P-008",
+                "text": "Does processes exist to regularly check if the basics (provisioning & deletion, privileged accounts management, AD interconnection, known vulnerabilities) are in place?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "AD-EMPLOYEE-AUTHENTIC",
+            "name": "Employee Authentication",
+            "weight": 0.0,
+            "business_risk": "Operational and technology risk of credential compromise and financial loss due to lack of ability to operate in an uncontrolled environment and inadequate measures to protect end user privacy.",
+            "questions": [
+              {
+                "code": "AD-EMPLOYEE-AUTHENTIC-001",
+                "text": "Do you have appropriate authentication (user ID and password to login) method implemented for users to verify their user identities to login into Active Directory?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-EMPLOYEE-AUTHENTIC-002",
+                "text": "Do you have two-factor or multi-factor authentication method configured for users to login from remote locations or other untrusted network location?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-EMPLOYEE-AUTHENTIC-003",
+                "text": "Are all the business applications used in the organization (on-premises and cloud based) are configured to authenticate using Active Directory?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "AD-EMPLOYEE-S-ACCESS-",
+            "name": "Employee' s Access Management",
+            "weight": 0.0,
+            "business_risk": "Operational and commercial risk due to lack of visibility and accountability on the access privileges and identity authorization that may lead to internal fraud and financial loss.",
+            "questions": [
+              {
+                "code": "AD-EMPLOYEE-S-ACCESS--001",
+                "text": "Do you have Roles defined to cater segregation of duties in order to control\\limit the Active Directory access?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-EMPLOYEE-S-ACCESS--002",
+                "text": "Do you have owners defined on user identities to manage responsibilities of access provisioning, de-provisioning and perform particular activities using the identities?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "AD-EMPLOYEE-S-ACCESS--003",
+                "text": "Have you implemented group based Active Directory access to automatically provision\\de-provision limited access for users based on their defined roles?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "code": "SSO",
+        "name": "Single Sign-On",
+        "categories": [
+          {
+            "code": "SSO-SINGLE-SIGN-ON-GOV",
+            "name": "Single Sign On Governance",
+            "weight": 0.0,
+            "business_risk": "Operational risk of not having control to recover from any fraud or cyber attack due to lack of complete visibility of users with business roles and access privileges.\n\nProgram and competitive risk due to lack of control over operation especially over compromised access that leads to poor user experience.",
+            "questions": [
+              {
+                "code": "SSO-SINGLE-SIGN-ON-GOV-001",
+                "text": "Do you have SSO framework\\structure deployed within the organization to manage SSO authentication and access controls?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-GOV-002",
+                "text": "Do you have proper governing body defined and followed to oversee the approach across Enterprise for user identities authentication and authorisation?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-GOV-003",
+                "text": "Do Service Level Agreements (SLA's) exists for governing the performance of users identities authentication and their authorisation management process?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-GOV-004",
+                "text": "Does the organization sufficiently staffed with skilled resources to manage SSO operations?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-GOV-005",
+                "text": "Do you perform periodic internal reviews\\audit of SSO application\\data to manage streamlined polices and standards?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-GOV-006",
+                "text": "Do you have reporting capabilities configured\\implemented to provide real-time, consolidated data in reports across all your sites, user and groups as per the organizations requirement?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "SSO-SINGLE-SIGN-ON-POL",
+            "name": "Single Sign On Policies and Processes Enforcement",
+            "weight": 0.0,
+            "business_risk": "Commercial and reputation risk due to lack of policies and processes for access control on applications. This non-standardized methods to manage authorizations and identity or access exploitation would lead to poor user satisfaction.",
+            "questions": [
+              {
+                "code": "SSO-SINGLE-SIGN-ON-POL-001",
+                "text": "Do you have well defined Role Based Access Control policy configured in the SSO application for internal and external users (vendors, visitors)?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-POL-002",
+                "text": "Do you have policies and configuration implemented in SSO solution to supports user's access provisioning and deprovisioning on all applications within the organization?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-POL-003",
+                "text": "Do you have well defined process implemented to provision and de-provision excessive access for administrators to perform administrative tasks?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-POL-004",
+                "text": "Do you have strong password complexity (length, characters, etc.) configured in SSO solution for users to set password in systems?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-POL-005",
+                "text": "Do you have implemented attributes based application access policies for users to restrict logging into the application from outside of the organization's network or limited application access from VPN connection or from the other specific networks?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-POL-006",
+                "text": "Do you have defined change management process followed to make any changes like (upgrade, configuration modification, recovery during natural disaster etc.) in live\\production environment?",
+                "default_weight": 3.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "SSO-SINGLE-SIGN-ON-AUT",
+            "name": "Single Sign On Authentication",
+            "weight": 0.0,
+            "business_risk": "Commercial risk and program risk due to lack of centralized approach to access multiple applications. The compromised access would lead to poor user experience and hence the commercial loss.",
+            "questions": [
+              {
+                "code": "SSO-SINGLE-SIGN-ON-AUT-001",
+                "text": "Do you have well defined user authentication method\\approach implemented in organization for users to authenticate systems and applications?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-AUT-002",
+                "text": "Do you have strong authentication method configured for administrators to login into SSO application to perform administrator activities including configuration change or other operational activities?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-AUT-003",
+                "text": "Do users login into system once in a day or per session to get automatic login and access on all corporate applications including web based and mobile applications?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "SSO-SINGLE-SIGN-ON-ACC",
+            "name": "Single Sign On Access Management",
+            "weight": 0.0,
+            "business_risk": "Program risk and compliance risk due lack of visibility on the access privileges that may lead to compromised access and hence fraud and financial loss.",
+            "questions": [
+              {
+                "code": "SSO-SINGLE-SIGN-ON-ACC-001",
+                "text": "Does the SSO solution is implemented for all user communities (Workforce (employees and contractors), Partners/Vendors, Customers) to access applications within the organization?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-ACC-002",
+                "text": "Do Role Based Access Control has been enforced during provisioning and de-provisioning access on enterprise applications using SSO?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-ACC-003",
+                "text": "Do you have well defined approach enforced to provision and de-provision user access on SSO application?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          },
+          {
+            "code": "SSO-SINGLE-SIGN-ON-SER",
+            "name": "Single Sign On Services",
+            "weight": 0.0,
+            "business_risk": "Operational risk and reputational risks sue to lack of accountability across the organizational access or an authorization and data security which increases possibilities of fraud and data loss.",
+            "questions": [
+              {
+                "code": "SSO-SINGLE-SIGN-ON-SER-001",
+                "text": "Do you have integrated all applications within the organization residing on-premises and hosted on cloud with enterprise SSO solution to manage authentication and authorisation for users?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-SER-002",
+                "text": "Do you have Federation services implemented and configured in SSO solution to use the existing or corporate identity providers to authenticate systems or applications ?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-SER-003",
+                "text": "Do you have capabilities implemented to retain\\store users data when roaming users work from different locations, various workstations?",
+                "default_weight": 4.0,
+                "evidence_required": false,
+                "help_text": ""
+              },
+              {
+                "code": "SSO-SINGLE-SIGN-ON-SER-004",
+                "text": "Do you use strong encryption technology to store and secure all credentials within the organization?",
+                "default_weight": 5.0,
+                "evidence_required": false,
+                "help_text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scoring": {
+    "requested_default": {
+      "levels": {
+        "Manual": 0,
+        "Partial": 1,
+        "Fully": 3,
+        "NA": null
+      }
+    },
+    "recommended_default": {
+      "levels": {
+        "Manual": 1,
+        "Partial": 3,
+        "Fully": 5,
+        "NA": null
+      }
+    },
+    "maturity_narrative": {
+      "scale": {
+        "Non Existent": 0,
+        "Initial": 1,
+        "Repeatable": 2,
+        "Defined": 3,
+        "Managed": 4,
+        "Optimized": 5
+      }
+    }
+  },
+  "metadata": {
+    "source_file": "Copy of Digital Identity Framework Assessment Final Template.xlsx",
+    "domains_count": 4,
+    "categories_count": 21,
+    "questions_count": 113
+  }
+}

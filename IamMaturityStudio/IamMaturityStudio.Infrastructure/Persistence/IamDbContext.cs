@@ -23,12 +23,32 @@ public class IamDbContext : DbContext
     public DbSet<AssessmentScore> AssessmentScores => Set<AssessmentScore>();
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<OrgScoringModel> OrgScoringModels => Set<OrgScoringModel>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // TODO: Configure entity relationships, constraints, and indexes.
-        // TODO: Add value object conversions and precision rules as needed.
+        modelBuilder.Entity<Questionnaire>()
+            .HasIndex(q => new { q.Name, q.Version })
+            .IsUnique();
+
+        modelBuilder.Entity<IamDomainEntity>()
+            .HasIndex(d => new { d.QuestionnaireId, d.Code })
+            .IsUnique();
+
+        modelBuilder.Entity<Category>()
+            .HasIndex(c => new { c.DomainId, c.Code })
+            .IsUnique();
+
+        modelBuilder.Entity<Question>()
+            .HasIndex(q => new { q.CategoryId, q.Code })
+            .IsUnique();
+
+        modelBuilder.Entity<OrgScoringModel>()
+            .HasIndex(m => new { m.OrganizationId, m.Name })
+            .IsUnique();
+
+        // TODO: Configure navigation properties and richer constraints.
     }
 }
