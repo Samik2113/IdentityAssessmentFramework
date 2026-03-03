@@ -20,6 +20,7 @@
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.7.3" />
+    <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.1" />
     <PackageVersion Include="Microsoft.Identity.Web" Version="3.10.0" />
     <PackageVersion Include="Blazorise" Version="1.6.1" />
     <PackageVersion Include="xunit" Version="2.9.2" />

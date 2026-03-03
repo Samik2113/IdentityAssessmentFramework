@@ -3,9 +3,11 @@ using IamMaturityStudio.Api.Middleware;
 using IamMaturityStudio.Api.Services;
 using IamMaturityStudio.Application;
 using IamMaturityStudio.Infrastructure;
+using IamMaturityStudio.Infrastructure.Persistence;
 using IamMaturityStudio.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -17,7 +19,11 @@ builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration
     .WriteTo.Console());
 
 builder.Services.AddApplication();
+builder.Services.AddPersistence(builder.Configuration, builder.Environment);
 builder.Services.AddInfrastructure(builder.Configuration);
+
+var resolvedSqlConnectionString = PersistenceServiceCollectionExtensions.ResolveConnectionString(builder.Configuration, builder.Environment);
+builder.Services.AddHealthChecks().AddSqlServer(connectionString: resolvedSqlConnectionString, name: "sql");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -62,6 +68,13 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<IamDbContext>();
+    db.Database.Migrate();
+}
+
+if (app.Environment.IsDevelopment())
+{
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -76,6 +89,8 @@ app.MapGet("/health", () => Results.Ok(new
     status = "Healthy",
     timestampUtc = DateTimeOffset.UtcNow
 })).AllowAnonymous();
+
+app.MapHealthChecks("/health/db").AllowAnonymous();
 
 app.MapPost("/admin/seed/questionnaire", async (
     IQuestionnaireSeedImporter importer,
