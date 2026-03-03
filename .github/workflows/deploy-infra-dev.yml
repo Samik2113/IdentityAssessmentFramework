@@ -75,6 +75,15 @@ jobs:
               exit 1
             fi
 
+            login_lc=$(echo "$SQL_ADMIN_LOGIN" | tr '[:upper:]' '[:lower:]')
+            case "$login_lc" in
+              admin|administrator|sa|root|guest|public)
+                echo "SQL_ADMIN_LOGIN '$SQL_ADMIN_LOGIN' is not allowed by Azure SQL."
+                echo "Choose a different login, for example: iamadmin01"
+                exit 1
+                ;;
+            esac
+
             if [ ${#SQL_ADMIN_PASSWORD} -lt 8 ]; then
               echo "SQL_ADMIN_PASSWORD is too short. Use at least 8 characters per Azure SQL policy."
               exit 1
