@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>IamMaturityStudio.Web</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Web" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Blazorise" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IamMaturityStudio.Application\IamMaturityStudio.Application.csproj" />
+    <ProjectReference Include="..\IamMaturityStudio.Infrastructure\IamMaturityStudio.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>

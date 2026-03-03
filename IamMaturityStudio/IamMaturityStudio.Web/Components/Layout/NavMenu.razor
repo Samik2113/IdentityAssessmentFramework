@@ -1,0 +1,9 @@
+<nav>
+    <ul>
+        <li><NavLink href="/">Home</NavLink></li>
+        <li><NavLink href="/assessments">Assessments</NavLink></li>
+        <AuthorizeView Roles="Admin">
+            <li><NavLink href="/admin">Admin</NavLink></li>
+        </AuthorizeView>
+    </ul>
+</nav>

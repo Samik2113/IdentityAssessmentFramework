@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>IamMaturityStudio.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IamMaturityStudio.Domain\IamMaturityStudio.Domain.csproj" />
+    <ProjectReference Include="..\IamMaturityStudio.Application\IamMaturityStudio.Application.csproj" />
+    <ProjectReference Include="..\IamMaturityStudio.Infrastructure\IamMaturityStudio.Infrastructure.csproj" />
+    <ProjectReference Include="..\IamMaturityStudio.Api\IamMaturityStudio.Api.csproj" />
+    <ProjectReference Include="..\IamMaturityStudio.Web\IamMaturityStudio.Web.csproj" />
+  </ItemGroup>
+</Project>
