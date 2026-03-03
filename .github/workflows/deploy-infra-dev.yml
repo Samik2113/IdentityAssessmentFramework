@@ -58,6 +58,17 @@ jobs:
           inlineScript: |
             set -euo pipefail
 
+            echo "Ensuring required resource providers are registered..."
+            for provider in Microsoft.Sql Microsoft.Web; do
+              state=$(az provider show --namespace "$provider" --query registrationState -o tsv 2>/dev/null || echo "NotRegistered")
+              if [ "$state" != "Registered" ]; then
+                echo "Registering $provider..."
+                az provider register --namespace "$provider" --wait --output none
+              else
+                echo "$provider is already registered."
+              fi
+            done
+
             echo "Creating resource group..."
             az group create --name "$ENV_RG" --location "$ENV_LOCATION" --output none
 
