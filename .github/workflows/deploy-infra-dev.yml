@@ -78,7 +78,7 @@ jobs:
                 --name "$ENV_API_APP" \
                 --resource-group "$ENV_RG" \
                 --plan "$ENV_PLAN" \
-                --runtime "DOTNET|8.0" \
+                --runtime "DOTNETCORE|8.0" \
                 --output none
             fi
 
@@ -88,7 +88,7 @@ jobs:
                 --name "$ENV_WEB_APP" \
                 --resource-group "$ENV_RG" \
                 --plan "$ENV_PLAN" \
-                --runtime "DOTNET|8.0" \
+                --runtime "DOTNETCORE|8.0" \
                 --output none
             fi
 
