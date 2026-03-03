@@ -58,6 +58,28 @@ jobs:
           inlineScript: |
             set -euo pipefail
 
+            echo "Validating SQL admin credentials from GitHub secrets..."
+            if [ -z "${SQL_ADMIN_LOGIN:-}" ] || [ -z "${SQL_ADMIN_PASSWORD:-}" ]; then
+              echo "SQL_ADMIN_LOGIN and SQL_ADMIN_PASSWORD must be set in GitHub environment secrets."
+              exit 1
+            fi
+
+            if [ "$SQL_ADMIN_LOGIN" = "***" ]; then
+              echo "SQL_ADMIN_LOGIN is set to a masked placeholder (***). Use the real SQL admin username in GitHub secret."
+              exit 1
+            fi
+
+            if [[ ! "$SQL_ADMIN_LOGIN" =~ ^[A-Za-z][A-Za-z0-9_]{1,127}$ ]]; then
+              echo "Invalid SQL_ADMIN_LOGIN format."
+              echo "Use 2-128 chars, start with a letter, and use only letters/numbers/underscore."
+              exit 1
+            fi
+
+            if [ ${#SQL_ADMIN_PASSWORD} -lt 8 ]; then
+              echo "SQL_ADMIN_PASSWORD is too short. Use at least 8 characters per Azure SQL policy."
+              exit 1
+            fi
+
             echo "Ensuring required resource providers are registered..."
             for provider in Microsoft.Sql Microsoft.Web; do
               state=$(az provider show --namespace "$provider" --query registrationState -o tsv 2>/dev/null || echo "NotRegistered")
