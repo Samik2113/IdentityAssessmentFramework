@@ -145,15 +145,15 @@ jobs:
                 --output none
             fi
 
-            echo "Creating or updating Azure SQL database (serverless GP_S_Gen5_1)..."
+            echo "Creating or updating Azure SQL database (serverless, workflow v2)..."
             az sql db create \
               --name "$ENV_SQL_DB" \
               --resource-group "$ENV_RG" \
               --server "$ENV_SQL_SERVER" \
               --compute-model Serverless \
-              --edition GeneralPurpose \
-              --family Gen5 \
-              --capacity 1 \
+              -e GeneralPurpose \
+              -f Gen5 \
+              -c 1 \
               --output none
 
             echo "Allowing Azure services through SQL firewall..."
