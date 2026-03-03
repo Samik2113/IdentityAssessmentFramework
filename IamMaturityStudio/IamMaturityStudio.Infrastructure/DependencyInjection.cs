@@ -21,6 +21,8 @@ public static class DependencyInjection
 
         services.AddScoped<IAssessmentRepository, AssessmentRepository>();
         services.AddScoped<IQuestionnaireSeedImporter, QuestionnaireSeedImporter>();
+        services.AddScoped<IApplicationDataContext, ApplicationDataContext>();
+        services.AddSingleton<IStorageSasService, StorageSasService>();
 
         var blobServiceUri = configuration["Azure:BlobServiceUri"];
         if (!string.IsNullOrWhiteSpace(blobServiceUri))

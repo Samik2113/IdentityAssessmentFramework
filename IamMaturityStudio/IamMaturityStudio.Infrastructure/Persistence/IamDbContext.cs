@@ -17,6 +17,8 @@ public class IamDbContext : DbContext
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Question> Questions => Set<Question>();
     public DbSet<Assessment> Assessments => Set<Assessment>();
+    public DbSet<AssessmentParticipant> AssessmentParticipants => Set<AssessmentParticipant>();
+    public DbSet<AssessmentInvitation> AssessmentInvitations => Set<AssessmentInvitation>();
     public DbSet<AssessmentResponse> AssessmentResponses => Set<AssessmentResponse>();
     public DbSet<EvidenceRequest> EvidenceRequests => Set<EvidenceRequest>();
     public DbSet<EvidenceFile> EvidenceFiles => Set<EvidenceFile>();
@@ -24,6 +26,7 @@ public class IamDbContext : DbContext
     public DbSet<Report> Reports => Set<Report>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<OrgScoringModel> OrgScoringModels => Set<OrgScoringModel>();
+    public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -47,6 +50,26 @@ public class IamDbContext : DbContext
 
         modelBuilder.Entity<OrgScoringModel>()
             .HasIndex(m => new { m.OrganizationId, m.Name })
+            .IsUnique();
+
+        modelBuilder.Entity<OrganizationMembership>()
+            .HasIndex(m => new { m.OrganizationId, m.UserId, m.Role })
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.AadObjectId)
+            .IsUnique();
+
+        modelBuilder.Entity<Assessment>()
+            .HasIndex(a => new { a.OrganizationId, a.AssessmentYear, a.Name })
+            .IsUnique();
+
+        modelBuilder.Entity<AssessmentParticipant>()
+            .HasIndex(p => new { p.AssessmentId, p.UserId, p.Role })
+            .IsUnique();
+
+        modelBuilder.Entity<AssessmentResponse>()
+            .HasIndex(r => new { r.AssessmentId, r.QuestionId, r.RespondentUserId })
             .IsUnique();
 
         // TODO: Configure navigation properties and richer constraints.

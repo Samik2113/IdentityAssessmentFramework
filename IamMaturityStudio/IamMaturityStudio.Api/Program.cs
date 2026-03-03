@@ -1,3 +1,5 @@
+using IamMaturityStudio.Api.Endpoints;
+using IamMaturityStudio.Api.Middleware;
 using IamMaturityStudio.Api.Services;
 using IamMaturityStudio.Application;
 using IamMaturityStudio.Infrastructure;
@@ -5,6 +7,7 @@ using IamMaturityStudio.Infrastructure.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
+using Microsoft.OpenApi.Models;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +25,33 @@ builder.Services
 
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "IamMaturityStudio API", Version = "v1" });
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter a valid JWT bearer token"
+    });
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 if (builder.Configuration.GetValue<bool>("Seeding:RunOnStartup"))
 {
@@ -38,6 +67,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseSerilogRequestLogging();
+app.UseMiddleware<ApiExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -71,5 +101,7 @@ app.MapPost("/admin/seed/questionnaire", async (
     return Results.Ok(result);
 })
 .RequireAuthorization(new AuthorizeAttribute { Roles = "Admin" });
+
+app.MapCoreEndpoints();
 
 app.Run();
