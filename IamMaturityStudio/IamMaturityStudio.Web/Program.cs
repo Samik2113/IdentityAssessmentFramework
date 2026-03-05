@@ -15,6 +15,8 @@ builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration
 
 var useMockIdentity = builder.Configuration.GetValue<bool>("Features:UseMockIdentity");
 
+builder.Services.AddAuthentication();
+
 if (!useMockIdentity)
 {
     builder.Services
