@@ -145,8 +145,37 @@ jobs:
                 --output none || true
             fi
 
-      - name: Warmup ping API health/db
-        run: curl -fsS "https://${{ env.ENV_API_APP }}.azurewebsites.net/health/db"
+      - name: Warmup ping API health endpoints (with retries)
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_URL="https://${{ env.ENV_API_APP }}.azurewebsites.net"
+
+          echo "Waiting for API process startup (/health)..."
+          for i in {1..20}; do
+            if curl -fsS "$BASE_URL/health" >/dev/null; then
+              echo "API /health is ready on attempt $i"
+              break
+            fi
+            if [ "$i" -eq 20 ]; then
+              echo "API /health did not become ready in time."
+              exit 1
+            fi
+            sleep 10
+          done
+
+          echo "Waiting for database readiness (/health/db)..."
+          for i in {1..20}; do
+            if curl -fsS "$BASE_URL/health/db" >/dev/null; then
+              echo "API /health/db is ready on attempt $i"
+              exit 0
+            fi
+            if [ "$i" -eq 20 ]; then
+              echo "API /health/db did not become ready in time."
+              exit 1
+            fi
+            sleep 10
+          done
 
   deploy_web:
     runs-on: ubuntu-latest
