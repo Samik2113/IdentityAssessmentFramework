@@ -18,9 +18,14 @@ builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services
-    .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+var useMockIdentity = builder.Configuration.GetValue<bool>("Features:UseMockIdentity");
+
+if (!useMockIdentity)
+{
+    builder.Services
+        .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+}
 
 builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
@@ -46,7 +51,7 @@ builder.Services.AddHttpClient<DashboardClient>(c => c.BaseAddress = new Uri(api
 builder.Services.AddHttpClient<ReportsClient>(c => c.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<AiGuidanceClient>(c => c.BaseAddress = new Uri(apiBaseUrl));
 
-if (builder.Configuration.GetValue<bool>("Features:UseMockIdentity"))
+if (useMockIdentity)
 {
     builder.Services.AddScoped<DevIdentityState>();
     builder.Services.AddScoped<AuthenticationStateProvider, MockAuthenticationStateProvider>();
@@ -66,7 +71,10 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
-app.UseAuthentication();
+if (!useMockIdentity)
+{
+    app.UseAuthentication();
+}
 app.UseAuthorization();
 app.UseSerilogRequestLogging();
 
