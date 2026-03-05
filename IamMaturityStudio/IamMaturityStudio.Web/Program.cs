@@ -1,5 +1,3 @@
-using IamMaturityStudio.Application;
-using IamMaturityStudio.Infrastructure;
 using IamMaturityStudio.Web.Components;
 using IamMaturityStudio.Web.Services;
 using IamMaturityStudio.Web.Services.Api;
@@ -14,9 +12,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration
     .ReadFrom.Configuration(context.Configuration)
     .WriteTo.Console());
-
-builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
 
 var useMockIdentity = builder.Configuration.GetValue<bool>("Features:UseMockIdentity");
 
