@@ -18,7 +18,6 @@ public static class DependencyInjection
         services.AddValidatorsFromAssemblyContaining<AssessmentDtoValidator>();
         services.AddScoped<IScoringService, ScoringService>();
         services.AddScoped<IDashboardService, DashboardService>();
-        services.AddScoped<IReportService, ReportService>();
 
         return services;
     }

@@ -63,11 +63,6 @@ public interface IDashboardService
     DashboardResponse Build(Guid assessmentId, Guid orgId);
 }
 
-public interface IReportService
-{
-    ReportResponse Generate(Guid assessmentId, Guid orgId, GenerateReportRequest request);
-}
-
 public interface IAiGuidanceService
 {
     Task<AiGuidanceResponse> GenerateAsync(AiGuidanceRequest request, Guid orgId, CancellationToken cancellationToken);

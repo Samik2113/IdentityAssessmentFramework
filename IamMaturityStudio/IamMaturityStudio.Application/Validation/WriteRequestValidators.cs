@@ -1,5 +1,6 @@
 using FluentValidation;
 using IamMaturityStudio.Application.Contracts;
+using IamMaturityStudio.Application.Reports;
 
 namespace IamMaturityStudio.Application.Validation;
 
@@ -133,7 +134,8 @@ public sealed class GenerateReportRequestValidator : AbstractValidator<GenerateR
 {
     public GenerateReportRequestValidator()
     {
-        RuleFor(x => x.ReportType).Equal("Standard");
+        RuleFor(x => x.AssessmentId).NotEmpty();
+        RuleFor(x => x.ReportType).NotEmpty().Equal("Standard");
     }
 }
 

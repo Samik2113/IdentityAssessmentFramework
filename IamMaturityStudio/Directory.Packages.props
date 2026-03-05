@@ -18,6 +18,8 @@
     <PackageVersion Include="Azure.Identity" Version="1.13.1" />
     <PackageVersion Include="Azure.Security.KeyVault.Secrets" Version="4.6.0" />
     <PackageVersion Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <PackageVersion Include="QuestPDF" Version="2024.7.1" />
+    <PackageVersion Include="SkiaSharp" Version="2.88.8" />
     <PackageVersion Include="Serilog.AspNetCore" Version="8.0.2" />
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.7.3" />
     <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="8.0.1" />

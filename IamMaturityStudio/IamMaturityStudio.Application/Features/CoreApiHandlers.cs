@@ -1,5 +1,6 @@
 using IamMaturityStudio.Application.Contracts;
 using IamMaturityStudio.Application.Interfaces;
+using IamMaturityStudio.Application.Reports;
 using IamMaturityStudio.Application.Security;
 using IamMaturityStudio.Domain.Entities;
 using IamMaturityStudio.Domain.Enums;
@@ -566,11 +567,11 @@ public class CoreApiHandlers :
         return Task.FromResult(_dashboardService.Build(assessment.Id, assessment.OrganizationId));
     }
 
-    public Task<ReportResponse> Handle(GenerateReportCommand request, CancellationToken cancellationToken)
+    public async Task<ReportResponse> Handle(GenerateReportCommand request, CancellationToken cancellationToken)
     {
         AccessGuards.EnsureConsultant(request.Requester);
         var assessment = GetAssessmentWithOrgScope(request.Requester, request.AssessmentId);
-        return Task.FromResult(_reportService.Generate(assessment.Id, assessment.OrganizationId, request.Request));
+        return await _reportService.GenerateAsync(assessment.Id, assessment.OrganizationId, request.Request, cancellationToken);
     }
 
     public async Task<AiGuidanceResponse> Handle(GetAiGuidanceCommand request, CancellationToken cancellationToken)

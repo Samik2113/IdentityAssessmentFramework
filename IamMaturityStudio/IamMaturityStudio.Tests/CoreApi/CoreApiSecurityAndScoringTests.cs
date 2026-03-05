@@ -3,6 +3,7 @@ using FluentAssertions;
 using IamMaturityStudio.Application.Contracts;
 using IamMaturityStudio.Application.Features;
 using IamMaturityStudio.Application.Interfaces;
+using IamMaturityStudio.Application.Reports;
 using IamMaturityStudio.Application.Security;
 using IamMaturityStudio.Application.Services;
 using IamMaturityStudio.Domain.Entities;
@@ -199,7 +200,7 @@ public class CoreApiSecurityAndScoringTests
     {
         var scoringService = new ScoringService(context);
         var dashboardService = new DashboardService(context, scoringService);
-        var reportService = new ReportService(context);
+        var reportService = new TestReportService();
         var aiService = new TestAiGuidanceService();
         var storageService = new StorageSasService();
         var evidenceScanService = new NoOpEvidenceScanService();
@@ -231,6 +232,14 @@ public class CoreApiSecurityAndScoringTests
                 new[] { "example" },
                 new[] { "evidence" },
                 new[] { "check" }));
+        }
+    }
+
+    private sealed class TestReportService : IReportService
+    {
+        public Task<ReportResponse> GenerateAsync(Guid assessmentId, Guid orgId, GenerateReportRequest request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new ReportResponse("https://reports.local/test.pdf", "test.pdf", DateTimeOffset.UtcNow));
         }
     }
 

@@ -3,6 +3,7 @@ using IamMaturityStudio.Api.Security;
 using IamMaturityStudio.Application.Contracts;
 using IamMaturityStudio.Application.Features;
 using IamMaturityStudio.Application.Interfaces;
+using IamMaturityStudio.Application.Reports;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 
@@ -209,9 +210,10 @@ public static class CoreEndpoints
 
         app.MapPost("/reports/{assessmentId:guid}/pdf", [Authorize(Roles = "Consultant,Admin")] async (Guid assessmentId, GenerateReportRequest request, HttpContext httpContext, IMediator mediator, IApplicationDataContext dataContext, IValidator<GenerateReportRequest> validator, CancellationToken ct) =>
         {
-            await validator.ValidateAndThrowAsync(request, ct);
+            var normalizedRequest = request with { AssessmentId = assessmentId };
+            await validator.ValidateAndThrowAsync(normalizedRequest, ct);
             var requester = UserContextFactory.Create(httpContext.User, dataContext);
-            return Results.Ok(await mediator.Send(new GenerateReportCommand(requester, assessmentId, request), ct));
+            return Results.Ok(await mediator.Send(new GenerateReportCommand(requester, assessmentId, normalizedRequest), ct));
         });
 
         app.MapPost("/ai/guidance", [Authorize(Roles = "Admin,Consultant,ClientRespondent")] async (AiGuidanceRequest request, HttpContext httpContext, IMediator mediator, IApplicationDataContext dataContext, IValidator<AiGuidanceRequest> validator, CancellationToken ct) =>

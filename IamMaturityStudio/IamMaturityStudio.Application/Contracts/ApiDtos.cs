@@ -90,9 +90,6 @@ public sealed record DashboardCategoryScore(Guid CategoryId, string CategoryCode
 public sealed record DashboardRadarSeries(string Axis, decimal Value);
 public sealed record DashboardHeatmapCell(string DomainCode, string CategoryCode, decimal Percent, string Band);
 
-public sealed record GenerateReportRequest(string ReportType, string? ThemeOverride);
-public sealed record ReportResponse(string ReportUrl);
-
 public sealed record AiGuidanceRequest(
     string Domain,
     string Category,

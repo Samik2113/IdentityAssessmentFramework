@@ -30,8 +30,8 @@ public sealed record DashboardKpi(decimal OverallPercent, decimal EvidenceComple
 public sealed record DashboardCategoryScore(Guid CategoryId, string CategoryCode, decimal Percent);
 public sealed record DashboardRadarSeries(string Axis, decimal Value);
 public sealed record DashboardHeatmapCell(string DomainCode, string CategoryCode, decimal Percent, string Band);
-public sealed record GenerateReportRequest(string ReportType, string? ThemeOverride);
-public sealed record ReportResponse(string ReportUrl);
+public sealed record GenerateReportRequest(Guid AssessmentId, string ReportType, string? ThemeOverride);
+public sealed record ReportResponse(string ReportUrl, string FileName, DateTimeOffset GeneratedAtUtc);
 public sealed record AiGuidanceRequest(string Domain, string Category, string QuestionText, string BusinessRisk, object LevelDefinitions, string? UserComment);
 public sealed record AiGuidanceResponse(string Explanation, IReadOnlyList<string> Examples, IReadOnlyList<string> EvidenceSuggestions, IReadOnlyList<string> Checklist);
 
