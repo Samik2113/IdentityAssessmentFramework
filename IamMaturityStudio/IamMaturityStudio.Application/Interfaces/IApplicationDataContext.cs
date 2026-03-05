@@ -70,5 +70,5 @@ public interface IReportService
 
 public interface IAiGuidanceService
 {
-    AiGuidanceResponse Generate(AiGuidanceRequest request);
+    Task<AiGuidanceResponse> GenerateAsync(AiGuidanceRequest request, Guid orgId, CancellationToken cancellationToken);
 }

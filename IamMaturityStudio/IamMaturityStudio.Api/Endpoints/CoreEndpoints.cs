@@ -214,12 +214,13 @@ public static class CoreEndpoints
             return Results.Ok(await mediator.Send(new GenerateReportCommand(requester, assessmentId, request), ct));
         });
 
-        app.MapPost("/ai/guidance", [Authorize] async (AiGuidanceRequest request, HttpContext httpContext, IMediator mediator, IApplicationDataContext dataContext, IValidator<AiGuidanceRequest> validator, CancellationToken ct) =>
+        app.MapPost("/ai/guidance", [Authorize(Roles = "Admin,Consultant,ClientRespondent")] async (AiGuidanceRequest request, HttpContext httpContext, IMediator mediator, IApplicationDataContext dataContext, IValidator<AiGuidanceRequest> validator, CancellationToken ct) =>
         {
             await validator.ValidateAndThrowAsync(request, ct);
             var requester = UserContextFactory.Create(httpContext.User, dataContext);
             return Results.Ok(await mediator.Send(new GetAiGuidanceCommand(requester, request), ct));
-        });
+        })
+        .RequireRateLimiting("AiGuidancePerUser");
 
         return app;
     }

@@ -573,14 +573,15 @@ public class CoreApiHandlers :
         return Task.FromResult(_reportService.Generate(assessment.Id, assessment.OrganizationId, request.Request));
     }
 
-    public Task<AiGuidanceResponse> Handle(GetAiGuidanceCommand request, CancellationToken cancellationToken)
+    public async Task<AiGuidanceResponse> Handle(GetAiGuidanceCommand request, CancellationToken cancellationToken)
     {
         if (request.Requester.UserId == Guid.Empty)
         {
             throw new ForbiddenAccessException("Authenticated user required.");
         }
 
-        return Task.FromResult(_aiGuidanceService.Generate(request.Request));
+        var orgId = request.Requester.OrgMemberships.FirstOrDefault();
+        return await _aiGuidanceService.GenerateAsync(request.Request, orgId, cancellationToken);
     }
 
     private Assessment GetAssessmentWithOrgScope(RequesterContext requester, Guid assessmentId)

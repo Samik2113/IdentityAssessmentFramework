@@ -19,7 +19,6 @@ public static class DependencyInjection
         services.AddScoped<IScoringService, ScoringService>();
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IReportService, ReportService>();
-        services.AddScoped<IAiGuidanceService, AiGuidanceService>();
 
         return services;
     }

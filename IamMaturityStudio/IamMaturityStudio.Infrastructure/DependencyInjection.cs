@@ -18,6 +18,11 @@ public static class DependencyInjection
         services.AddScoped<IAssessmentRepository, AssessmentRepository>();
         services.AddScoped<IQuestionnaireSeedImporter, QuestionnaireSeedImporter>();
         services.AddScoped<IApplicationDataContext, ApplicationDataContext>();
+        services.AddMemoryCache();
+        services.AddHttpClient<IAzureOpenAiClient, AzureOpenAiClient>();
+        services.AddSingleton<IAiPromptRedactor, AiPromptRedactor>();
+        services.AddSingleton<DevNoopAiGuidanceService>();
+        services.AddScoped<IAiGuidanceService, AzureOpenAiGuidanceService>();
         services.AddSingleton<IBlobStorageService, StorageSasService>();
         services.AddSingleton<EvidenceScanService>();
         services.AddSingleton<IEvidenceScanService>(sp => sp.GetRequiredService<EvidenceScanService>());
@@ -33,12 +38,6 @@ public static class DependencyInjection
         if (!string.IsNullOrWhiteSpace(keyVaultUri))
         {
             services.AddSingleton(new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential()));
-        }
-
-        var openAiEndpoint = configuration["Azure:OpenAIEndpoint"];
-        if (!string.IsNullOrWhiteSpace(openAiEndpoint))
-        {
-            services.AddSingleton<IAzureOpenAiClient>(new AzureOpenAiClient(openAiEndpoint));
         }
 
         return services;

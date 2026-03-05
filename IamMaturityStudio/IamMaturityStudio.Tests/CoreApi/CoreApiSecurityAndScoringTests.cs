@@ -200,7 +200,7 @@ public class CoreApiSecurityAndScoringTests
         var scoringService = new ScoringService(context);
         var dashboardService = new DashboardService(context, scoringService);
         var reportService = new ReportService(context);
-        var aiService = new AiGuidanceService();
+        var aiService = new TestAiGuidanceService();
         var storageService = new StorageSasService();
         var evidenceScanService = new NoOpEvidenceScanService();
 
@@ -219,6 +219,18 @@ public class CoreApiSecurityAndScoringTests
         public Task QueueScanAsync(Guid evidenceFileId, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class TestAiGuidanceService : IAiGuidanceService
+    {
+        public Task<AiGuidanceResponse> GenerateAsync(AiGuidanceRequest request, Guid orgId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new AiGuidanceResponse(
+                "test",
+                new[] { "example" },
+                new[] { "evidence" },
+                new[] { "check" }));
         }
     }
 
