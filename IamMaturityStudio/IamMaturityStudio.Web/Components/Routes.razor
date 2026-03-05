@@ -1,15 +1,26 @@
-<Router AppAssembly="typeof(Program).Assembly">
-    <Found Context="routeData">
-        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
-            <NotAuthorized>
-                <p>You are not authorized to view this page.</p>
-            </NotAuthorized>
-        </AuthorizeRouteView>
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-    <NotFound>
+<ErrorBoundary>
+    <ChildContent>
+        <Router AppAssembly="typeof(Program).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                    <NotAuthorized>
+                        <p>You are not authorized to view this page.</p>
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+                <FocusOnNavigate RouteData="routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <LayoutView Layout="typeof(Layout.MainLayout)">
+                    <p>Page not found.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </ChildContent>
+    <ErrorContent>
         <LayoutView Layout="typeof(Layout.MainLayout)">
-            <p>Page not found.</p>
+            <h1>Something went wrong</h1>
+            <p>An unexpected error occurred. Please reload this page.</p>
+            <button type="button" onclick="window.location.reload()">Reload</button>
         </LayoutView>
-    </NotFound>
-</Router>
+    </ErrorContent>
+</ErrorBoundary>

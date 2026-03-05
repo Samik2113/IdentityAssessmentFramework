@@ -1,0 +1,209 @@
+@page "/assessments/{Id:guid}/collect"
+@attribute [Authorize(Roles = "ClientRespondent,Admin")]
+@inject AssessmentsClient AssessmentsClient
+@inject QuestionnaireClient QuestionnaireClient
+@inject ResponsesClient ResponsesClient
+@inject EvidenceClient EvidenceClient
+@inject AppState AppState
+
+<PageTitle>Collect Assessment</PageTitle>
+
+<h1>Assessment Collection</h1>
+<Toast Message="@_toast" Type="@_toastType" />
+
+@if (_loading)
+{
+    <p>Loading...</p>
+}
+else if (_tree is null)
+{
+    <p>Unable to load questionnaire.</p>
+}
+else
+{
+    <ProgressBar Percent="@CompletionPercent" Label="Collection progress" />
+
+    @foreach (var domain in _tree.Domains)
+    {
+        <section>
+            <h2>@domain.Code - @domain.Name</h2>
+            @foreach (var category in domain.Categories)
+            {
+                <article>
+                    <h3>@category.Code - @category.Name</h3>
+                    @foreach (var question in category.Questions)
+                    {
+                        <div>
+                            <h4>@question.Code - @question.Text</h4>
+                            <LevelSelector Value="@GetLevel(question.Id)" ValueChanged="level => SetLevel(question.Id, level)" />
+                            <label>Comment</label>
+                            <textarea @bind="GetModel(question.Id).Comment"></textarea>
+                            <label>Confidence (optional)</label>
+                            <input type="number" min="1" max="5" @bind="GetModel(question.Id).Confidence" />
+
+                            <AiGuidancePanel Domain="@domain.Name"
+                                             Category="@category.Name"
+                                             QuestionText="@question.Text"
+                                             BusinessRisk="@category.BusinessRisk"
+                                             LevelDefinitions="_levelDefinitions" />
+
+                            @if (_openEvidence.TryGetValue(question.Id, out var reqs))
+                            {
+                                <h5>Evidence Requests</h5>
+                                @foreach (var req in reqs)
+                                {
+                                    <p>@req.Notes</p>
+                                    <EvidenceUploader AssessmentId="@Id" QuestionId="@question.Id" RequestId="@req.Id" OnUploaded="OnEvidenceUploaded" />
+                                }
+                            }
+                        </div>
+                    }
+                </article>
+            }
+        </section>
+    }
+
+    <div class="sticky-footer">
+        <button @onclick="SaveDraftAsync">Save Draft</button>
+        <button @onclick="SubmitForReviewAsync" disabled="@(!CanSubmit)">Submit for Review</button>
+    </div>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private bool _loading = true;
+    private QuestionnaireTreeResponse? _tree;
+    private Dictionary<Guid, ResponseEditModel> _models = new();
+    private Dictionary<Guid, List<EvidenceRequestDto>> _openEvidence = new();
+    private string? _toast;
+    private string _toastType = "info";
+
+    private readonly object _levelDefinitions = new
+    {
+        Manual = "Ad hoc / manual",
+        Partial = "Partially implemented",
+        Fully = "Fully implemented",
+        NA = "Not applicable"
+    };
+
+    private int CompletionPercent => _models.Count == 0
+        ? 0
+        : (int)Math.Round(_models.Values.Count(v => !string.IsNullOrWhiteSpace(v.Level)) * 100.0 / _models.Count);
+
+    private bool CanSubmit => _models.Values.All(v => !string.IsNullOrWhiteSpace(v.Level));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        AppState.SetAssessment(Id);
+
+        var assessments = await AssessmentsClient.GetAssessmentsAsync(CancellationToken.None);
+        var assessment = assessments.FirstOrDefault(a => a.Id == Id);
+        if (assessment is null)
+        {
+            _loading = false;
+            return;
+        }
+
+        _tree = await QuestionnaireClient.GetTreeAsync(assessment.QuestionnaireId, CancellationToken.None);
+
+        var existing = await ResponsesClient.GetRespondentAsync(Id, CancellationToken.None);
+        _models = _tree.Domains
+            .SelectMany(d => d.Categories)
+            .SelectMany(c => c.Questions)
+            .ToDictionary(
+                q => q.Id,
+                q =>
+                {
+                    var found = existing.FirstOrDefault(r => r.QuestionId == q.Id);
+                    return new ResponseEditModel
+                    {
+                        QuestionId = q.Id,
+                        Level = found?.Level,
+                        Comment = found?.Comment,
+                        Confidence = found?.Confidence
+                    };
+                });
+
+        var requests = await EvidenceClient.GetRequestsAsync(Id, CancellationToken.None);
+        _openEvidence = requests
+            .Where(r => string.Equals(r.Status, "Open", StringComparison.OrdinalIgnoreCase))
+            .GroupBy(r => r.QuestionId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        _loading = false;
+    }
+
+    private ResponseEditModel GetModel(Guid questionId) => _models[questionId];
+    private string? GetLevel(Guid questionId) => _models.TryGetValue(questionId, out var value) ? value.Level : null;
+
+    private Task SetLevel(Guid questionId, string level)
+    {
+        _models[questionId].Level = level;
+        AppState.SetUnsavedChanges(true);
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveDraftAsync()
+    {
+        try
+        {
+            var items = _models.Values.Select(v => new UpsertResponseRequest(v.QuestionId, v.Level ?? string.Empty, v.Comment, v.Confidence)).ToList();
+            await ResponsesClient.SaveBulkAsync(Id, items, CancellationToken.None);
+            _toast = "Draft saved.";
+            _toastType = "success";
+            AppState.SetUnsavedChanges(false);
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+            Console.Error.WriteLine(ex);
+        }
+    }
+
+    private async Task SubmitForReviewAsync()
+    {
+        await SaveDraftAsync();
+        if (!CanSubmit)
+        {
+            _toast = "Please complete all levels before submit.";
+            _toastType = "error";
+            return;
+        }
+
+        try
+        {
+            await AssessmentsClient.UpdateStatusAsync(Id, "UnderReview", CancellationToken.None);
+            _toast = "Submitted for review.";
+            _toastType = "success";
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+            Console.Error.WriteLine(ex);
+        }
+    }
+
+    private async Task OnEvidenceUploaded()
+    {
+        _toast = "Evidence uploaded.";
+        _toastType = "success";
+        await LoadAsync();
+    }
+
+    private sealed class ResponseEditModel
+    {
+        public Guid QuestionId { get; set; }
+        public string? Level { get; set; }
+        public string? Comment { get; set; }
+        public int? Confidence { get; set; }
+    }
+}

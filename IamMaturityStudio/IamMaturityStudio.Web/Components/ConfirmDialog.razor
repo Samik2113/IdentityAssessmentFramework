@@ -1,0 +1,18 @@
+@if (Visible)
+{
+    <div class="confirm-dialog" role="dialog" aria-modal="true" aria-label="Confirmation dialog">
+        <p>@Message</p>
+        <button type="button" @onclick="OnConfirm">Confirm</button>
+        <button type="button" @onclick="OnCancel">Cancel</button>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Message { get; set; } = "Are you sure?";
+    [Parameter] public EventCallback Confirmed { get; set; }
+    [Parameter] public EventCallback Canceled { get; set; }
+
+    private Task OnConfirm() => Confirmed.InvokeAsync();
+    private Task OnCancel() => Canceled.InvokeAsync();
+}

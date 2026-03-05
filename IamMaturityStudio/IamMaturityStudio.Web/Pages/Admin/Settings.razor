@@ -1,0 +1,101 @@
+@page "/admin"
+@attribute [Authorize(Roles = "Admin")]
+@inject OrgsClient OrgsClient
+
+<PageTitle>Admin Settings</PageTitle>
+
+<h1>Admin Settings</h1>
+<Toast Message="@_toast" Type="@_toastType" />
+
+@if (_orgs.Count == 0)
+{
+    <p>Loading organizations...</p>
+}
+else
+{
+    <label>Organization
+        <select @bind="_selectedOrgId" @bind:after="LoadBrandingAsync">
+            @foreach (var org in _orgs)
+            {
+                <option value="@org.Id">@org.Name</option>
+            }
+        </select>
+    </label>
+
+    <section>
+        <h3>Branding</h3>
+        <label>Logo URL <input @bind="_logoUrl" /></label>
+        <label>Primary/Secondary Theme JSON <textarea @bind="_themeJson"></textarea></label>
+    </section>
+
+    <section>
+        <h3>Scoring Model</h3>
+        <select @bind="_scoringModel">
+            <option value="requested_default">requested_default (0/1/3)</option>
+            <option value="recommended_default">recommended_default (1/3/5)</option>
+        </select>
+    </section>
+
+    <section>
+        <h3>Heatmap Thresholds</h3>
+        <label>Red less than <input type="number" @bind="_redLessThan" /></label>
+        <label>Amber upper bound <input type="number" @bind="_amberUpper" /></label>
+    </section>
+
+    <button @onclick="SaveAsync">Save</button>
+}
+
+@code {
+    private List<Organization> _orgs = [];
+    private Guid _selectedOrgId;
+    private string _logoUrl = string.Empty;
+    private string _themeJson = "{}";
+    private string _scoringModel = "requested_default";
+    private int _redLessThan = 40;
+    private int _amberUpper = 70;
+    private string? _toast;
+    private string _toastType = "info";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _orgs = (await OrgsClient.GetAsync(CancellationToken.None)).ToList();
+        if (_orgs.Count > 0)
+        {
+            _selectedOrgId = _orgs[0].Id;
+            await LoadBrandingAsync();
+        }
+    }
+
+    private async Task LoadBrandingAsync()
+    {
+        var branding = await OrgsClient.GetBrandingAsync(_selectedOrgId, CancellationToken.None);
+        _logoUrl = branding.LogoUrl ?? string.Empty;
+        _themeJson = branding.ThemeJson ?? "{}";
+        if (!string.IsNullOrWhiteSpace(branding.HeatmapBands))
+        {
+            var parts = branding.HeatmapBands.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            if (parts.Length == 3)
+            {
+                _scoringModel = parts[0];
+                int.TryParse(parts[1], out _redLessThan);
+                int.TryParse(parts[2], out _amberUpper);
+            }
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        var heatmapBands = $"{_scoringModel}|{_redLessThan}|{_amberUpper}";
+        try
+        {
+            await OrgsClient.SaveBrandingAsync(_selectedOrgId, new UpdateOrgBrandingRequest(_logoUrl, _themeJson, heatmapBands), CancellationToken.None);
+            _toast = "Settings saved.";
+            _toastType = "success";
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+        }
+    }
+}

@@ -1,0 +1,76 @@
+@inject AiGuidanceClient AiGuidanceClient
+
+<div class="ai-guidance-panel">
+    <button type="button" @onclick="Toggle">AI Guidance</button>
+
+    @if (_expanded)
+    {
+        <div>
+            <textarea @bind="_comment" placeholder="Optional context for AI guidance"></textarea>
+            <button type="button" @onclick="LoadAsync" disabled="@_loading">@(_loading ? "Loading..." : "Generate")</button>
+
+            @if (!string.IsNullOrWhiteSpace(_error))
+            {
+                <p class="text-danger">@_error</p>
+            }
+
+            @if (_response is not null)
+            {
+                <h4>Explanation</h4>
+                <p>@_response.Explanation</p>
+                <h4>Examples</h4>
+                <ul>@foreach (var item in _response.Examples) { <li>@item</li> }</ul>
+                <h4>Evidence Suggestions</h4>
+                <ul>@foreach (var item in _response.EvidenceSuggestions) { <li>@item</li> }</ul>
+                <h4>Checklist</h4>
+                <ul>@foreach (var item in _response.Checklist) { <li>@item</li> }</ul>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Domain { get; set; } = string.Empty;
+    [Parameter] public string Category { get; set; } = string.Empty;
+    [Parameter] public string QuestionText { get; set; } = string.Empty;
+    [Parameter] public string BusinessRisk { get; set; } = string.Empty;
+    [Parameter] public object LevelDefinitions { get; set; } = new { };
+
+    private bool _expanded;
+    private bool _loading;
+    private string _comment = string.Empty;
+    private string? _error;
+    private AiGuidanceResponse? _response;
+
+    private void Toggle() => _expanded = !_expanded;
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            _response = await AiGuidanceClient.GetGuidanceAsync(new AiGuidanceRequest(
+                Domain,
+                Category,
+                QuestionText,
+                BusinessRisk,
+                LevelDefinitions,
+                string.IsNullOrWhiteSpace(_comment) ? null : _comment),
+                CancellationToken.None);
+        }
+        catch (InvalidOperationException ex) when (ex.Message.Contains("429"))
+        {
+            _error = "AI guidance limit reached. Please wait a minute and try again.";
+        }
+        catch
+        {
+            _error = "AI guidance is currently unavailable. Please continue with manual input.";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

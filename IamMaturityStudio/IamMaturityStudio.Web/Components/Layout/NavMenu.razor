@@ -1,9 +1,39 @@
+@inject IConfiguration Configuration
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IServiceProvider ServiceProvider
+
 <nav>
     <ul>
         <li><NavLink href="/">Home</NavLink></li>
-        <li><NavLink href="/assessments">Assessments</NavLink></li>
+
+        <AuthorizeView Roles="ClientRespondent,Consultant,Admin">
+            <li><NavLink href="/assessments">Assessments</NavLink></li>
+        </AuthorizeView>
+
         <AuthorizeView Roles="Admin">
             <li><NavLink href="/admin">Admin</NavLink></li>
         </AuthorizeView>
     </ul>
+
+    @if (Configuration.GetValue<bool>("Features:UseMockIdentity"))
+    {
+        <div class="mock-role-switcher">
+            <p><strong>DEV Mock Role</strong></p>
+            <select @bind="_role" @bind:after="ApplyMockRole">
+                <option value="ClientRespondent">ClientRespondent</option>
+                <option value="Consultant">Consultant</option>
+                <option value="Admin">Admin</option>
+            </select>
+        </div>
+    }
 </nav>
+
+@code {
+    private string _role = "ClientRespondent";
+
+    private void ApplyMockRole()
+    {
+        var state = ServiceProvider.GetService<DevIdentityState>();
+        state?.SetRole(_role);
+    }
+}

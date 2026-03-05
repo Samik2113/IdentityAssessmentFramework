@@ -1,0 +1,199 @@
+@page "/assessments/{Id:guid}/review"
+@attribute [Authorize(Roles = "Consultant,Admin")]
+@inject AssessmentsClient AssessmentsClient
+@inject ResponsesClient ResponsesClient
+@inject EvidenceClient EvidenceClient
+@inject ScoringClient ScoringClient
+@inject QuestionnaireClient QuestionnaireClient
+
+<PageTitle>Consultant Review</PageTitle>
+
+<h1>Review Assessment</h1>
+<Toast Message="@_toast" Type="@_toastType" />
+
+<div>
+    <label>Search <input @bind="_search" /></label>
+    <label>Status
+        <select @bind="_status">
+            @foreach (var s in _statuses)
+            {
+                <option value="@s">@s</option>
+            }
+        </select>
+    </label>
+    <button @onclick="UpdateStatusAsync">Update Status</button>
+    <button @onclick="ComputeScoreAsync">Compute Score</button>
+</div>
+
+<div>
+    <label>Invite participants (comma-separated emails)</label>
+    <textarea @bind="_inviteEmails"></textarea>
+    <button @onclick="InviteAsync">Send Invites</button>
+</div>
+
+@if (_score is not null)
+{
+    <section>
+        <h3>Score Summary</h3>
+        <p>Overall: @_score.OverallPercent% | Maturity: @_score.OverallMaturity0To5</p>
+        <ul>
+            @foreach (var d in _score.Domains)
+            {
+                <li>@d.DomainCode: @d.Percent%</li>
+            }
+        </ul>
+    </section>
+}
+
+<table>
+    <thead>
+    <tr><th>Question</th><th>Respondent Level</th><th>Comment</th><th>Evidence Count</th><th>Score</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    @foreach (var row in FilteredRows)
+    {
+        <tr>
+            <td>@row.QuestionText</td>
+            <td>@row.Level</td>
+            <td>@row.Comment</td>
+            <td>@row.EvidenceCount</td>
+            <td>@(row.Score?.ToString() ?? "-")</td>
+            <td>
+                <button @onclick="() => RequestEvidenceAsync(row.QuestionId)">Request Evidence</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private readonly string[] _statuses = ["Draft", "InCollection", "UnderReview", "EvidenceRequested", "EvidenceReceived", "Finalized"];
+    private List<ReviewRow> _rows = [];
+    private string _status = "UnderReview";
+    private string? _search;
+    private string _inviteEmails = string.Empty;
+    private ScoreSnapshotResponse? _score;
+    private string? _toast;
+    private string _toastType = "info";
+
+    private IEnumerable<ReviewRow> FilteredRows => _rows
+        .Where(r => string.IsNullOrWhiteSpace(_search) || r.QuestionText.Contains(_search, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        var consultantResponses = await ResponsesClient.GetConsultantAsync(Id, CancellationToken.None);
+        var assessments = await AssessmentsClient.GetAssessmentsAsync(CancellationToken.None);
+        var assessment = assessments.FirstOrDefault(a => a.Id == Id);
+        if (assessment is null)
+        {
+            return;
+        }
+
+        var tree = await QuestionnaireClient.GetTreeAsync(assessment.QuestionnaireId, CancellationToken.None);
+        var textMap = tree.Domains
+            .SelectMany(d => d.Categories)
+            .SelectMany(c => c.Questions)
+            .ToDictionary(q => q.Id, q => q.Text);
+
+        _rows = consultantResponses.Select(r => new ReviewRow
+        {
+            QuestionId = r.QuestionId,
+            QuestionText = textMap.TryGetValue(r.QuestionId, out var text) ? text : r.QuestionId.ToString(),
+            Level = r.Level,
+            Comment = r.Comment,
+            EvidenceCount = r.EvidenceCount,
+            Score = r.Score
+        }).ToList();
+    }
+
+    private async Task RequestEvidenceAsync(Guid questionId)
+    {
+        try
+        {
+            await EvidenceClient.CreateRequestAsync(Id, new CreateEvidenceRequestRequest(questionId, DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)), "Please upload supporting evidence."), CancellationToken.None);
+            _toast = "Evidence request created.";
+            _toastType = "success";
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+            Console.Error.WriteLine(ex);
+        }
+    }
+
+    private async Task UpdateStatusAsync()
+    {
+        try
+        {
+            await AssessmentsClient.UpdateStatusAsync(Id, _status, CancellationToken.None);
+            _toast = "Status updated.";
+            _toastType = "success";
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+        }
+    }
+
+    private async Task InviteAsync()
+    {
+        var emails = _inviteEmails
+            .Split([',', '\n', '\r', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        if (emails.Count == 0)
+        {
+            _toast = "Provide at least one email.";
+            _toastType = "error";
+            return;
+        }
+
+        try
+        {
+            var invited = await AssessmentsClient.InviteAsync(Id, emails, CancellationToken.None);
+            _toast = $"Invited {invited} participant(s).";
+            _toastType = "success";
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+        }
+    }
+
+    private async Task ComputeScoreAsync()
+    {
+        try
+        {
+            _score = await ScoringClient.ComputeAsync(Id, CancellationToken.None);
+            _toast = "Score computed.";
+            _toastType = "success";
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+        }
+    }
+
+    private sealed class ReviewRow
+    {
+        public Guid QuestionId { get; set; }
+        public string QuestionText { get; set; } = string.Empty;
+        public string Level { get; set; } = string.Empty;
+        public string? Comment { get; set; }
+        public int EvidenceCount { get; set; }
+        public decimal? Score { get; set; }
+    }
+}

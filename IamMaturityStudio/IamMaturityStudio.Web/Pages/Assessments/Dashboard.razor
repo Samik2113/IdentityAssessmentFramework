@@ -1,0 +1,84 @@
+@page "/assessments/{Id:guid}/dashboard"
+@attribute [Authorize(Roles = "Consultant,Admin")]
+@inject DashboardClient DashboardClient
+@inject ReportsClient ReportsClient
+@inject ChartDataAdapter ChartDataAdapter
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Assessment Dashboard</h1>
+<Toast Message="@_toast" Type="@_toastType" />
+
+@if (_dashboard is null)
+{
+    <p>Loading dashboard...</p>
+}
+else
+{
+    <section>
+        <h3>KPIs</h3>
+        <ul>
+            <li>Overall maturity: @_dashboard.Kpis.OverallPercent%</li>
+            <li>Evidence completeness: @_dashboard.Kpis.EvidenceCompletenessPercent%</li>
+            <li>Gaps: @_dashboard.Kpis.GapsCount</li>
+            <li>Quick wins: @_dashboard.Kpis.QuickWinsCount</li>
+        </ul>
+    </section>
+
+    <section>
+        <h3>Radar</h3>
+        <RadarChart Data="@_radar" />
+    </section>
+
+    <section>
+        <h3>Heatmap</h3>
+        <HeatmapChart Data="@_heatmap" />
+    </section>
+
+    <section>
+        <button @onclick="GenerateReportAsync">Generate PDF Report</button>
+        @if (!string.IsNullOrWhiteSpace(_reportUrl))
+        {
+            <a href="@_reportUrl" target="_blank" rel="noopener">Download</a>
+        }
+    </section>
+}
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private DashboardResponse? _dashboard;
+    private RadarChartData? _radar;
+    private HeatmapData? _heatmap;
+    private string? _reportUrl;
+    private string? _toast;
+    private string _toastType = "info";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _dashboard = await DashboardClient.GetAsync(Id, CancellationToken.None);
+        _radar = ChartDataAdapter.ToRadar(_dashboard);
+        _heatmap = ChartDataAdapter.ToHeatmap(_dashboard);
+    }
+
+    private async Task GenerateReportAsync()
+    {
+        try
+        {
+            var report = await ReportsClient.GeneratePdfAsync(Id, CancellationToken.None);
+            _reportUrl = report.ReportUrl;
+            _toast = "Report generated.";
+            _toastType = "success";
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+        }
+    }
+}

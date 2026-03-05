@@ -1,0 +1,19 @@
+@inject IJSRuntime JS
+
+<div id="@_id" class="chart-heatmap" style="height:340px;" role="img" aria-label="Heatmap chart for category maturity"></div>
+
+@code {
+    [Parameter] public HeatmapData? Data { get; set; }
+    private readonly string _id = $"heatmap-{Guid.NewGuid():N}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Data is null)
+        {
+            return;
+        }
+
+        var payload = Data.Rows.Select(r => new { label = r.Label, band = r.Band, value = r.Value }).ToArray();
+        await JS.InvokeVoidAsync("iamCharts.renderHeatmap", _id, payload);
+    }
+}

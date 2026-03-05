@@ -1,0 +1,111 @@
+@page "/assessments"
+@attribute [Authorize(Roles = "Admin,Consultant,ClientRespondent")]
+@inject AssessmentsClient AssessmentsClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Assessments</PageTitle>
+
+<h1>Assessments</h1>
+
+<div>
+    <label>Year <input type="number" @bind="_yearFilter" /></label>
+    <label>Status <input @bind="_statusFilter" /></label>
+    <button @onclick="ReloadAsync">Refresh</button>
+</div>
+
+<button @onclick="() => _showCreate = !_showCreate">Create Assessment</button>
+@if (_showCreate)
+{
+    <EditForm Model="_create" OnValidSubmit="CreateAsync">
+        <DataAnnotationsValidator />
+        <label>Name <input @bind="_create.Name" /></label>
+        <label>Organization <input @bind="_create.OrgIdText" placeholder="Org GUID" /></label>
+        <label>Questionnaire <input @bind="_create.QuestionnaireIdText" placeholder="Questionnaire GUID" /></label>
+        <label>Year <input type="number" @bind="_create.AssessmentYear" /></label>
+        <button type="submit">Create</button>
+    </EditForm>
+}
+
+<Toast Message="@_toast" Type="@_toastType" />
+
+<table>
+    <thead>
+    <tr><th>Name</th><th>Year</th><th>Status</th><th>Last Updated</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Filtered)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.AssessmentYear</td>
+            <td>@item.Status</td>
+            <td>@item.CreatedAt.ToLocalTime()</td>
+            <td>
+                <button @onclick="() => GoReview(item.Id)">Review</button>
+                <button @onclick="() => GoDashboard(item.Id)">Dashboard</button>
+                <button @onclick="() => GoCollect(item.Id)">Collect</button>
+                <button @onclick="() => GoReport(item.Id)">Report</button>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@code {
+    private List<AssessmentSummaryResponse> _assessments = [];
+    private bool _showCreate;
+    private string? _statusFilter;
+    private int? _yearFilter;
+    private string? _toast;
+    private string _toastType = "info";
+    private CreateFormModel _create = new();
+
+    private IEnumerable<AssessmentSummaryResponse> Filtered => _assessments
+        .Where(a => !_yearFilter.HasValue || a.AssessmentYear == _yearFilter)
+        .Where(a => string.IsNullOrWhiteSpace(_statusFilter) || a.Status.Contains(_statusFilter, StringComparison.OrdinalIgnoreCase))
+        .OrderByDescending(a => a.AssessmentYear);
+
+    protected override Task OnInitializedAsync() => ReloadAsync();
+
+    private async Task ReloadAsync()
+    {
+        _assessments = (await AssessmentsClient.GetAssessmentsAsync(CancellationToken.None)).ToList();
+    }
+
+    private async Task CreateAsync()
+    {
+        if (!Guid.TryParse(_create.OrgIdText, out var orgId) || !Guid.TryParse(_create.QuestionnaireIdText, out var questionnaireId))
+        {
+            _toast = "Organization and Questionnaire must be GUID values.";
+            _toastType = "error";
+            return;
+        }
+
+        try
+        {
+            await AssessmentsClient.CreateAsync(new CreateAssessmentRequest(orgId, questionnaireId, _create.AssessmentYear, _create.Name), CancellationToken.None);
+            _toast = "Assessment created.";
+            _toastType = "success";
+            _showCreate = false;
+            await ReloadAsync();
+        }
+        catch (Exception ex)
+        {
+            _toast = ex.Message;
+            _toastType = "error";
+        }
+    }
+
+    private void GoReview(Guid id) => NavigationManager.NavigateTo($"/assessments/{id}/review");
+    private void GoDashboard(Guid id) => NavigationManager.NavigateTo($"/assessments/{id}/dashboard");
+    private void GoCollect(Guid id) => NavigationManager.NavigateTo($"/assessments/{id}/collect");
+    private void GoReport(Guid id) => NavigationManager.NavigateTo($"/assessments/{id}/dashboard?report=true");
+
+    private sealed class CreateFormModel
+    {
+        public string Name { get; set; } = "New Assessment";
+        public string OrgIdText { get; set; } = string.Empty;
+        public string QuestionnaireIdText { get; set; } = string.Empty;
+        public int AssessmentYear { get; set; } = DateTime.UtcNow.Year;
+    }
+}

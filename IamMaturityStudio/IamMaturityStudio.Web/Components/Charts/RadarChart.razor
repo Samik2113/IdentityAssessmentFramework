@@ -1,0 +1,18 @@
+@inject IJSRuntime JS
+
+<div id="@_id" class="chart-radar" style="height:320px;" role="img" aria-label="Radar chart for domain maturity"></div>
+
+@code {
+    [Parameter] public RadarChartData? Data { get; set; }
+    private readonly string _id = $"radar-{Guid.NewGuid():N}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Data is null)
+        {
+            return;
+        }
+
+        await JS.InvokeVoidAsync("iamCharts.renderRadar", _id, Data.Labels, Data.Values);
+    }
+}

@@ -1,0 +1,51 @@
+@inject EvidenceClient EvidenceClient
+
+<div class="evidence-uploader">
+    <InputFile OnChange="OnSelected" aria-label="Upload evidence" />
+    @if (!string.IsNullOrWhiteSpace(_status))
+    {
+        <p>@_status</p>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid AssessmentId { get; set; }
+    [Parameter] public Guid QuestionId { get; set; }
+    [Parameter] public Guid RequestId { get; set; }
+    [Parameter] public EventCallback OnUploaded { get; set; }
+
+    private string? _status;
+
+    private async Task OnSelected(InputFileChangeEventArgs args)
+    {
+        var file = args.File;
+        _status = "Requesting upload URL...";
+
+        try
+        {
+            var sas = await EvidenceClient.CreateUploadAsync(AssessmentId,
+                new CreateEvidenceUploadRequest(RequestId, file.Name, file.ContentType, file.Size),
+                CancellationToken.None);
+
+            _status = "Uploading file...";
+            using var stream = file.OpenReadStream(25 * 1024 * 1024);
+            using var content = new StreamContent(stream);
+            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+
+            using var http = new HttpClient();
+            var putResult = await http.PutAsync(sas.UploadUrl, content);
+            putResult.EnsureSuccessStatusCode();
+
+            await EvidenceClient.CompleteUploadAsync(AssessmentId,
+                new CompleteEvidenceUploadRequest(RequestId, sas.BlobName, file.Name, file.ContentType),
+                CancellationToken.None);
+
+            _status = "Uploaded successfully.";
+            await OnUploaded.InvokeAsync();
+        }
+        catch
+        {
+            _status = "Upload failed. Please retry.";
+        }
+    }
+}

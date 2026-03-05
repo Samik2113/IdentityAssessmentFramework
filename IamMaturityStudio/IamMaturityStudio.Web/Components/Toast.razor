@@ -1,0 +1,11 @@
+@if (!string.IsNullOrWhiteSpace(Message))
+{
+    <div class="toast @Type" role="status" aria-live="polite">
+        @Message
+    </div>
+}
+
+@code {
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public string Type { get; set; } = "info";
+}

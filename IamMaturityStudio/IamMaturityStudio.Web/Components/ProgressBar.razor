@@ -1,0 +1,9 @@
+<div class="progress-wrap" aria-label="Collection progress">
+    <div class="progress-label">@Label (@Percent%)</div>
+    <progress value="@Percent" max="100"></progress>
+</div>
+
+@code {
+    [Parameter] public int Percent { get; set; }
+    [Parameter] public string Label { get; set; } = "Progress";
+}
