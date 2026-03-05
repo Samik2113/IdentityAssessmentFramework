@@ -113,20 +113,113 @@ public class CoreApiSecurityAndScoringTests
         await finalizeCall.Should().ThrowAsync<InvalidOperationException>();
     }
 
+    [Fact]
+    public async Task Evidence_Upload_Request_Returns_Sas_And_Complete_Registers_PendingScan()
+    {
+        await using var db = CreateDbContext();
+        var context = new ApplicationDataContext(db);
+        SeedMinimalAssessmentGraph(context, out var orgId, out var assessmentId, out var consultantUserId, out var respondentUserId);
+
+        var questionId = db.Questions.First().Id;
+        var evidenceRequestId = Guid.NewGuid();
+        db.EvidenceRequests.Add(new EvidenceRequest
+        {
+            Id = evidenceRequestId,
+            AssessmentId = assessmentId,
+            QuestionId = questionId,
+            Status = "Open",
+            CreatedByUserId = consultantUserId
+        });
+        await db.SaveChangesAsync();
+
+        var handlers = CreateHandlers(context);
+        var respondent = new RequesterContext(respondentUserId, "Resp", "resp@test.com", new HashSet<string> { "ClientRespondent" }, new[] { orgId });
+
+        var sas = await handlers.Handle(
+            new CreateEvidenceUploadCommand(respondent, assessmentId, new CreateEvidenceUploadRequest(evidenceRequestId, "evidence.pdf", "application/pdf", 1024)),
+            CancellationToken.None);
+
+        sas.UploadUrl.Should().NotBeNullOrWhiteSpace();
+        sas.BlobName.Should().StartWith($"evidence/{orgId}/{assessmentId}/{questionId}/");
+
+        var complete = await handlers.Handle(
+            new CompleteEvidenceUploadCommand(respondent, assessmentId, new CompleteEvidenceUploadRequest(evidenceRequestId, sas.BlobName, "evidence.pdf", "application/pdf")),
+            CancellationToken.None);
+
+        complete.VirusScanStatus.Should().Be("PendingScan");
+        db.EvidenceFiles.Should().Contain(f => f.Id == complete.EvidenceFileId && f.VirusScanStatus == "PendingScan");
+    }
+
+    [Fact]
+    public async Task Finalize_Succeeds_When_No_Open_Requests_And_No_PendingScan()
+    {
+        await using var db = CreateDbContext();
+        var context = new ApplicationDataContext(db);
+        SeedMinimalAssessmentGraph(context, out var orgId, out var assessmentId, out var consultantUserId, out _);
+
+        var assessment = db.Assessments.First(a => a.Id == assessmentId);
+        assessment.Status = AssessmentStatus.UnderReview;
+
+        var evidenceRequest = new EvidenceRequest
+        {
+            Id = Guid.NewGuid(),
+            AssessmentId = assessmentId,
+            QuestionId = db.Questions.First().Id,
+            Status = "Approved",
+            CreatedByUserId = consultantUserId
+        };
+        db.EvidenceRequests.Add(evidenceRequest);
+
+        db.EvidenceFiles.Add(new EvidenceFile
+        {
+            Id = Guid.NewGuid(),
+            AssessmentId = assessmentId,
+            QuestionId = evidenceRequest.QuestionId,
+            EvidenceRequestId = evidenceRequest.Id,
+            UploadedByUserId = consultantUserId,
+            FileName = "evidence.pdf",
+            FileType = "application/pdf",
+            BlobName = $"evidence/{orgId}/{assessmentId}/{evidenceRequest.QuestionId}/file.pdf",
+            VirusScanStatus = "Clean"
+        });
+
+        await db.SaveChangesAsync();
+
+        var handlers = CreateHandlers(context);
+        var consultant = new RequesterContext(consultantUserId, "Consultant", "consultant@test.com", new HashSet<string> { "Consultant" }, new[] { orgId });
+
+        var result = await handlers.Handle(
+            new UpdateAssessmentStatusCommand(consultant, assessmentId, new UpdateAssessmentStatusRequest("Finalized")),
+            CancellationToken.None);
+
+        result.Status.Should().Be("Finalized");
+    }
+
     private static CoreApiHandlers CreateHandlers(IApplicationDataContext context)
     {
         var scoringService = new ScoringService(context);
         var dashboardService = new DashboardService(context, scoringService);
         var reportService = new ReportService(context);
         var aiService = new AiGuidanceService();
+        var storageService = new StorageSasService();
+        var evidenceScanService = new NoOpEvidenceScanService();
 
         return new CoreApiHandlers(
             context,
-            new StorageSasService(),
+            storageService,
+            evidenceScanService,
             scoringService,
             dashboardService,
             reportService,
             aiService);
+    }
+
+    private sealed class NoOpEvidenceScanService : IEvidenceScanService
+    {
+        public Task QueueScanAsync(Guid evidenceFileId, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 
     private static void SeedMinimalAssessmentGraph(

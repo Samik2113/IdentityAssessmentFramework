@@ -32,6 +32,7 @@ public record CreateEvidenceRequestCommand(RequesterContext Requester, Guid Asse
 public record GetEvidenceRequestsQuery(RequesterContext Requester, Guid AssessmentId) : IRequest<IReadOnlyList<EvidenceRequestDto>>;
 public record UpdateEvidenceRequestStatusCommand(RequesterContext Requester, Guid AssessmentId, Guid RequestId, UpdateEvidenceRequestStatusRequest Request) : IRequest<EvidenceRequestDto>;
 public record CreateEvidenceUploadCommand(RequesterContext Requester, Guid AssessmentId, CreateEvidenceUploadRequest Request) : IRequest<CreateEvidenceUploadResponse>;
+public record CompleteEvidenceUploadCommand(RequesterContext Requester, Guid AssessmentId, CompleteEvidenceUploadRequest Request) : IRequest<CompleteEvidenceUploadResponse>;
 
 public record ComputeScoreCommand(RequesterContext Requester, Guid AssessmentId) : IRequest<ScoreSnapshotResponse>;
 public record GetDashboardQuery(RequesterContext Requester, Guid AssessmentId) : IRequest<DashboardResponse>;
@@ -59,13 +60,15 @@ public class CoreApiHandlers :
     IRequestHandler<GetEvidenceRequestsQuery, IReadOnlyList<EvidenceRequestDto>>,
     IRequestHandler<UpdateEvidenceRequestStatusCommand, EvidenceRequestDto>,
     IRequestHandler<CreateEvidenceUploadCommand, CreateEvidenceUploadResponse>,
+    IRequestHandler<CompleteEvidenceUploadCommand, CompleteEvidenceUploadResponse>,
     IRequestHandler<ComputeScoreCommand, ScoreSnapshotResponse>,
     IRequestHandler<GetDashboardQuery, DashboardResponse>,
     IRequestHandler<GenerateReportCommand, ReportResponse>,
     IRequestHandler<GetAiGuidanceCommand, AiGuidanceResponse>
 {
     private readonly IApplicationDataContext _dataContext;
-    private readonly IStorageSasService _storageSasService;
+    private readonly IBlobStorageService _blobStorageService;
+    private readonly IEvidenceScanService _evidenceScanService;
     private readonly IScoringService _scoringService;
     private readonly IDashboardService _dashboardService;
     private readonly IReportService _reportService;
@@ -73,14 +76,16 @@ public class CoreApiHandlers :
 
     public CoreApiHandlers(
         IApplicationDataContext dataContext,
-        IStorageSasService storageSasService,
+        IBlobStorageService blobStorageService,
+        IEvidenceScanService evidenceScanService,
         IScoringService scoringService,
         IDashboardService dashboardService,
         IReportService reportService,
         IAiGuidanceService aiGuidanceService)
     {
         _dataContext = dataContext;
-        _storageSasService = storageSasService;
+        _blobStorageService = blobStorageService;
+        _evidenceScanService = evidenceScanService;
         _scoringService = scoringService;
         _dashboardService = dashboardService;
         _reportService = reportService;
@@ -255,7 +260,7 @@ public class CoreApiHandlers :
 
         if (targetStatus == AssessmentStatus.Finalized)
         {
-            var hasOpenEvidenceRequests = _dataContext.EvidenceRequests.Any(r => r.AssessmentId == assessment.Id && (r.Status == "Open" || r.Status == "Submitted"));
+            var hasOpenEvidenceRequests = _dataContext.EvidenceRequests.Any(r => r.AssessmentId == assessment.Id && r.Status == "Open");
             var hasPendingScanFiles = _dataContext.EvidenceFiles.Any(f => f.AssessmentId == assessment.Id && f.VirusScanStatus == "PendingScan");
             if (hasOpenEvidenceRequests || hasPendingScanFiles)
             {
@@ -494,10 +499,40 @@ public class CoreApiHandlers :
             throw new InvalidOperationException("Evidence upload is only allowed for Open evidence requests.");
         }
 
-        var blobName = $"evidence/{assessment.OrganizationId}/{assessment.Id}/{Guid.NewGuid():N}-{request.Request.FileName}";
-        var uploadUrl = _storageSasService.CreateUploadUrl(blobName, TimeSpan.FromMinutes(10));
+        var sasResult = await _blobStorageService.GetUploadSasAsync(
+            assessment.OrganizationId,
+            assessment.Id,
+            evidenceRequest.QuestionId,
+            evidenceRequest.Id,
+            request.Request.FileName,
+            request.Request.FileType,
+            request.Request.FileSizeBytes,
+            cancellationToken);
 
-        _dataContext.Add(new EvidenceFile
+        return new CreateEvidenceUploadResponse(sasResult.UploadUrl, sasResult.BlobName, sasResult.ExpiresAt);
+    }
+
+    public async Task<CompleteEvidenceUploadResponse> Handle(CompleteEvidenceUploadCommand request, CancellationToken cancellationToken)
+    {
+        AccessGuards.EnsureRespondent(request.Requester);
+        var assessment = GetAssessmentWithOrgScope(request.Requester, request.AssessmentId);
+        EnsureParticipant(request.Requester.UserId, assessment.Id);
+
+        var evidenceRequest = _dataContext.EvidenceRequests.FirstOrDefault(r => r.Id == request.Request.EvidenceRequestId && r.AssessmentId == assessment.Id)
+            ?? throw new NotFoundException("Evidence request not found.");
+
+        if (!string.Equals(evidenceRequest.Status, "Open", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Evidence completion is only allowed for Open evidence requests.");
+        }
+
+        var expectedPrefix = $"evidence/{assessment.OrganizationId}/{assessment.Id}/{evidenceRequest.QuestionId}/";
+        if (!request.Request.BlobName.StartsWith(expectedPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Blob name does not match expected evidence location.");
+        }
+
+        var entity = new EvidenceFile
         {
             Id = Guid.NewGuid(),
             AssessmentId = assessment.Id,
@@ -506,12 +541,15 @@ public class CoreApiHandlers :
             UploadedByUserId = request.Requester.UserId,
             FileName = request.Request.FileName,
             FileType = request.Request.FileType,
-            BlobName = blobName,
+            BlobName = request.Request.BlobName,
             VirusScanStatus = "PendingScan"
-        });
+        };
 
+        _dataContext.Add(entity);
         await _dataContext.SaveChangesAsync(cancellationToken);
-        return new CreateEvidenceUploadResponse(uploadUrl, blobName);
+        await _evidenceScanService.QueueScanAsync(entity.Id, cancellationToken);
+
+        return new CompleteEvidenceUploadResponse(entity.Id, entity.BlobName, entity.VirusScanStatus);
     }
 
     public Task<ScoreSnapshotResponse> Handle(ComputeScoreCommand request, CancellationToken cancellationToken)

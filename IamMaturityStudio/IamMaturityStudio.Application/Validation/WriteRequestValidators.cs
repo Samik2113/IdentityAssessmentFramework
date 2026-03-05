@@ -107,9 +107,23 @@ public sealed class UpdateEvidenceRequestStatusRequestValidator : AbstractValida
 
 public sealed class CreateEvidenceUploadRequestValidator : AbstractValidator<CreateEvidenceUploadRequest>
 {
+    private const long MaxFileSizeBytes = 25 * 1024 * 1024;
+
     public CreateEvidenceUploadRequestValidator()
     {
         RuleFor(x => x.EvidenceRequestId).NotEmpty();
+        RuleFor(x => x.FileName).NotEmpty().MaximumLength(260);
+        RuleFor(x => x.FileType).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.FileSizeBytes).GreaterThan(0).LessThanOrEqualTo(MaxFileSizeBytes);
+    }
+}
+
+public sealed class CompleteEvidenceUploadRequestValidator : AbstractValidator<CompleteEvidenceUploadRequest>
+{
+    public CompleteEvidenceUploadRequestValidator()
+    {
+        RuleFor(x => x.EvidenceRequestId).NotEmpty();
+        RuleFor(x => x.BlobName).NotEmpty().MaximumLength(1024);
         RuleFor(x => x.FileName).NotEmpty().MaximumLength(260);
         RuleFor(x => x.FileType).NotEmpty().MaximumLength(100);
     }

@@ -33,6 +33,26 @@ public interface IStorageSasService
     string CreateUploadUrl(string blobName, TimeSpan lifetime);
 }
 
+public interface IBlobStorageService
+{
+    Task<BlobUploadSasResult> GetUploadSasAsync(
+        Guid orgId,
+        Guid assessmentId,
+        Guid questionId,
+        Guid requestId,
+        string fileName,
+        string fileType,
+        long fileSizeBytes,
+        CancellationToken cancellationToken);
+}
+
+public sealed record BlobUploadSasResult(string UploadUrl, string BlobName, DateTimeOffset ExpiresAt);
+
+public interface IEvidenceScanService
+{
+    Task QueueScanAsync(Guid evidenceFileId, CancellationToken cancellationToken);
+}
+
 public interface IScoringService
 {
     ScoreSnapshotResponse ComputeAndPersist(Guid assessmentId, Guid orgId);

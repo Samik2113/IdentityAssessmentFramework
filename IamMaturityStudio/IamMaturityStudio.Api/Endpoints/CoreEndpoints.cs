@@ -183,6 +183,13 @@ public static class CoreEndpoints
             return Results.Ok(await mediator.Send(new CreateEvidenceUploadCommand(requester, id, request), ct));
         });
 
+        app.MapPost("/assessments/{id:guid}/evidence/complete", [Authorize(Roles = "ClientRespondent,Admin")] async (Guid id, CompleteEvidenceUploadRequest request, HttpContext httpContext, IMediator mediator, IApplicationDataContext dataContext, IValidator<CompleteEvidenceUploadRequest> validator, CancellationToken ct) =>
+        {
+            await validator.ValidateAndThrowAsync(request, ct);
+            var requester = UserContextFactory.Create(httpContext.User, dataContext);
+            return Results.Ok(await mediator.Send(new CompleteEvidenceUploadCommand(requester, id, request), ct));
+        });
+
         return app;
     }
 

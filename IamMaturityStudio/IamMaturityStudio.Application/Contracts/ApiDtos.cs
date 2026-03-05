@@ -68,8 +68,10 @@ public sealed record ResponseListForRespondent(
 
 public sealed record CreateEvidenceRequestRequest(Guid QuestionId, DateOnly? DueDate, string? Notes);
 public sealed record UpdateEvidenceRequestStatusRequest(string Status, string? Notes);
-public sealed record CreateEvidenceUploadRequest(Guid EvidenceRequestId, string FileName, string FileType);
-public sealed record CreateEvidenceUploadResponse(string UploadUrl, string BlobName);
+public sealed record CreateEvidenceUploadRequest(Guid EvidenceRequestId, string FileName, string FileType, long FileSizeBytes);
+public sealed record CreateEvidenceUploadResponse(string UploadUrl, string BlobName, DateTimeOffset ExpiresAt);
+public sealed record CompleteEvidenceUploadRequest(Guid EvidenceRequestId, string BlobName, string FileName, string FileType);
+public sealed record CompleteEvidenceUploadResponse(Guid EvidenceFileId, string BlobName, string VirusScanStatus);
 public sealed record EvidenceRequestDto(Guid Id, Guid QuestionId, string Status, DateOnly? DueDate, string? Notes);
 public sealed record EvidenceFileDto(Guid Id, Guid EvidenceRequestId, string FileName, string FileType, string VirusScanStatus);
 
