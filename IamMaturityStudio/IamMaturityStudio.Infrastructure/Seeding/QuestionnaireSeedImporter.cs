@@ -79,8 +79,10 @@ public class QuestionnaireSeedImporter : IQuestionnaireSeedImporter
                 continue;
             }
 
-            var domain = await _dbContext.Domains
-                .FirstOrDefaultAsync(d => d.QuestionnaireId == questionnaire.Id && d.Code == domainCode, ct);
+            var domain = _dbContext.Domains.Local
+                .FirstOrDefault(d => d.QuestionnaireId == questionnaire.Id && d.Code == domainCode)
+                ?? await _dbContext.Domains
+                    .FirstOrDefaultAsync(d => d.QuestionnaireId == questionnaire.Id && d.Code == domainCode, ct);
 
             if (domain is null)
             {
@@ -108,8 +110,10 @@ public class QuestionnaireSeedImporter : IQuestionnaireSeedImporter
                     continue;
                 }
 
-                var category = await _dbContext.Categories
-                    .FirstOrDefaultAsync(c => c.DomainId == domain.Id && c.Code == categoryCode, ct);
+                var category = _dbContext.Categories.Local
+                    .FirstOrDefault(c => c.DomainId == domain.Id && c.Code == categoryCode)
+                    ?? await _dbContext.Categories
+                        .FirstOrDefaultAsync(c => c.DomainId == domain.Id && c.Code == categoryCode, ct);
 
                 if (category is null)
                 {
@@ -160,8 +164,10 @@ public class QuestionnaireSeedImporter : IQuestionnaireSeedImporter
                         continue;
                     }
 
-                    var question = await _dbContext.Questions
-                        .FirstOrDefaultAsync(q => q.CategoryId == category.Id && q.Code == questionCode, ct);
+                    var question = _dbContext.Questions.Local
+                        .FirstOrDefault(q => q.CategoryId == category.Id && q.Code == questionCode)
+                        ?? await _dbContext.Questions
+                            .FirstOrDefaultAsync(q => q.CategoryId == category.Id && q.Code == questionCode, ct);
 
                     if (question is null)
                     {

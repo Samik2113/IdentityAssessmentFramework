@@ -11,6 +11,11 @@
 <h1>Review Assessment</h1>
 <Toast Message="@_toast" Type="@_toastType" />
 
+@if (_loadFailed)
+{
+    <p>Review data is currently unavailable.</p>
+}
+
 <div>
     <label>Search <input @bind="_search" /></label>
     <label>Status
@@ -75,6 +80,7 @@
     private string? _search;
     private string _inviteEmails = string.Empty;
     private ScoreSnapshotResponse? _score;
+    private bool _loadFailed;
     private string? _toast;
     private string _toastType = "info";
 
@@ -88,29 +94,45 @@
 
     private async Task LoadAsync()
     {
-        var consultantResponses = await ResponsesClient.GetConsultantAsync(Id, CancellationToken.None);
-        var assessments = await AssessmentsClient.GetAssessmentsAsync(CancellationToken.None);
-        var assessment = assessments.FirstOrDefault(a => a.Id == Id);
-        if (assessment is null)
+        try
         {
+            var consultantResponses = await ResponsesClient.GetConsultantAsync(Id, CancellationToken.None);
+            var assessments = await AssessmentsClient.GetAssessmentsAsync(CancellationToken.None);
+            var assessment = assessments.FirstOrDefault(a => a.Id == Id);
+            if (assessment is null)
+            {
+                _loadFailed = true;
+                _toast = "Assessment not found.";
+                _toastType = "error";
+                return;
+            }
+
+            var tree = await QuestionnaireClient.GetTreeAsync(assessment.QuestionnaireId, CancellationToken.None);
+            var textMap = tree.Domains
+                .SelectMany(d => d.Categories)
+                .SelectMany(c => c.Questions)
+                .ToDictionary(q => q.Id, q => q.Text);
+
+            _rows = consultantResponses.Select(r => new ReviewRow
+            {
+                QuestionId = r.QuestionId,
+                QuestionText = textMap.TryGetValue(r.QuestionId, out var text) ? text : r.QuestionId.ToString(),
+                Level = r.Level,
+                Comment = r.Comment,
+                EvidenceCount = r.EvidenceCount,
+                Score = r.Score
+            }).ToList();
+
+            _loadFailed = false;
+        }
+        catch (Exception ex)
+        {
+            _rows = [];
+            _loadFailed = true;
+            _toast = $"Could not load review data. {ex.Message}";
+            _toastType = "error";
             return;
         }
-
-        var tree = await QuestionnaireClient.GetTreeAsync(assessment.QuestionnaireId, CancellationToken.None);
-        var textMap = tree.Domains
-            .SelectMany(d => d.Categories)
-            .SelectMany(c => c.Questions)
-            .ToDictionary(q => q.Id, q => q.Text);
-
-        _rows = consultantResponses.Select(r => new ReviewRow
-        {
-            QuestionId = r.QuestionId,
-            QuestionText = textMap.TryGetValue(r.QuestionId, out var text) ? text : r.QuestionId.ToString(),
-            Level = r.Level,
-            Comment = r.Comment,
-            EvidenceCount = r.EvidenceCount,
-            Score = r.Score
-        }).ToList();
     }
 
     private async Task RequestEvidenceAsync(Guid questionId)

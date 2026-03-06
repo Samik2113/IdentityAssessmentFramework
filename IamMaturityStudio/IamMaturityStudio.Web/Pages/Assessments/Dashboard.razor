@@ -11,7 +11,7 @@
 
 @if (_dashboard is null)
 {
-    <p>Loading dashboard...</p>
+    <p>@(_loadFailed ? "Dashboard unavailable." : "Loading dashboard...")</p>
 }
 else
 {
@@ -51,6 +51,7 @@ else
     private RadarChartData? _radar;
     private HeatmapData? _heatmap;
     private string? _reportUrl;
+    private bool _loadFailed;
     private string? _toast;
     private string _toastType = "info";
 
@@ -61,9 +62,22 @@ else
 
     private async Task LoadAsync()
     {
-        _dashboard = await DashboardClient.GetAsync(Id, CancellationToken.None);
-        _radar = ChartDataAdapter.ToRadar(_dashboard);
-        _heatmap = ChartDataAdapter.ToHeatmap(_dashboard);
+        try
+        {
+            _dashboard = await DashboardClient.GetAsync(Id, CancellationToken.None);
+            _radar = ChartDataAdapter.ToRadar(_dashboard);
+            _heatmap = ChartDataAdapter.ToHeatmap(_dashboard);
+            _loadFailed = false;
+        }
+        catch (Exception ex)
+        {
+            _dashboard = null;
+            _radar = null;
+            _heatmap = null;
+            _loadFailed = true;
+            _toast = $"Could not load dashboard. {ex.Message}";
+            _toastType = "error";
+        }
     }
 
     private async Task GenerateReportAsync()

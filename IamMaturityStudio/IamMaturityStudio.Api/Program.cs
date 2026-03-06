@@ -1,13 +1,16 @@
 using IamMaturityStudio.Api.Endpoints;
 using IamMaturityStudio.Api.Middleware;
+using IamMaturityStudio.Api.Security;
 using IamMaturityStudio.Api.Services;
 using IamMaturityStudio.Application;
 using IamMaturityStudio.Infrastructure;
 using IamMaturityStudio.Infrastructure.Persistence;
 using IamMaturityStudio.Infrastructure.Seeding;
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
@@ -23,12 +26,25 @@ builder.Services.AddApplication();
 builder.Services.AddPersistence(builder.Configuration, builder.Environment);
 builder.Services.AddInfrastructure(builder.Configuration);
 
-var resolvedSqlConnectionString = PersistenceServiceCollectionExtensions.ResolveConnectionString(builder.Configuration, builder.Environment);
-builder.Services.AddHealthChecks().AddSqlServer(connectionString: resolvedSqlConnectionString, name: "sql");
+var useMockIdentity = builder.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("Features:UseMockIdentity");
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+if (useMockIdentity)
+{
+    builder.Services
+        .AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = DevAuthenticationHandler.SchemeName;
+            options.DefaultChallengeScheme = DevAuthenticationHandler.SchemeName;
+            options.DefaultScheme = DevAuthenticationHandler.SchemeName;
+        })
+        .AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>(DevAuthenticationHandler.SchemeName, _ => { });
+}
+else
+{
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+}
 
 builder.Services.AddAuthorization();
 builder.Services.AddRateLimiter(options =>
@@ -90,7 +106,21 @@ if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<IamDbContext>();
-    if (db.Database.IsRelational())
+    if (db.Database.IsSqlite())
+    {
+        db.Database.EnsureCreated();
+
+        try
+        {
+            _ = db.Questionnaires.Any();
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 1 && ex.Message.Contains("no such table", StringComparison.OrdinalIgnoreCase))
+        {
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
+        }
+    }
+    else if (db.Database.IsRelational())
     {
         db.Database.Migrate();
     }
@@ -114,7 +144,20 @@ app.MapGet("/health", () => Results.Ok(new
     timestampUtc = DateTimeOffset.UtcNow
 })).AllowAnonymous();
 
-app.MapHealthChecks("/health/db").AllowAnonymous();
+app.MapGet("/health/db", async (IamDbContext db, CancellationToken ct) =>
+{
+    var connected = await db.Database.CanConnectAsync(ct);
+    if (!connected)
+    {
+        return Results.Problem("Database connectivity check failed.", statusCode: StatusCodes.Status503ServiceUnavailable);
+    }
+
+    return Results.Ok(new
+    {
+        status = "Healthy",
+        provider = db.Database.ProviderName
+    });
+}).AllowAnonymous();
 
 app.MapPost("/admin/seed/questionnaire", async (
     IQuestionnaireSeedImporter importer,

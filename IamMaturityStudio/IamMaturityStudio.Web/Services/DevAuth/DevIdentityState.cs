@@ -4,16 +4,20 @@ namespace IamMaturityStudio.Web.Services.DevAuth;
 
 public class DevIdentityState
 {
-    private const string DefaultRole = "ClientRespondent";
+    private const string DefaultRole = "Consultant";
+    private static string _globalRole = DefaultRole;
 
-    public string CurrentRole { get; private set; } = DefaultRole;
+    public string CurrentRole { get; private set; } = _globalRole;
     public event Action? Changed;
 
     public void SetRole(string role)
     {
         CurrentRole = role;
+        _globalRole = role;
         Changed?.Invoke();
     }
+
+    public static string GetGlobalRole() => _globalRole;
 
     public ClaimsPrincipal BuildPrincipal()
     {

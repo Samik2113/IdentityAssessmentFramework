@@ -2,6 +2,7 @@ using IamMaturityStudio.Web.Components;
 using IamMaturityStudio.Web.Services;
 using IamMaturityStudio.Web.Services.Api;
 using IamMaturityStudio.Web.Services.DevAuth;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Identity.Web;
@@ -15,9 +16,18 @@ builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration
 
 var useMockIdentity = builder.Configuration.GetValue<bool>("Features:UseMockIdentity");
 
-builder.Services.AddAuthentication();
-
-if (!useMockIdentity)
+if (useMockIdentity)
+{
+    builder.Services
+        .AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = DevAuthenticationHandler.SchemeName;
+            options.DefaultChallengeScheme = DevAuthenticationHandler.SchemeName;
+            options.DefaultScheme = DevAuthenticationHandler.SchemeName;
+        })
+        .AddScheme<AuthenticationSchemeOptions, DevAuthenticationHandler>(DevAuthenticationHandler.SchemeName, _ => { });
+}
+else
 {
     builder.Services
         .AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
@@ -68,10 +78,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAntiforgery();
-if (!useMockIdentity)
-{
-    app.UseAuthentication();
-}
+app.UseAuthentication();
 app.UseAuthorization();
 app.UseSerilogRequestLogging();
 
