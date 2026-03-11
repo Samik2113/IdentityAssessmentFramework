@@ -18,6 +18,7 @@ env:
   ENV_WEB_APP: iam-web-dev-eg586yn2603
   ENV_SQL_SERVER: iamsqldeveg586yn2603
   ENV_SQL_DB: iamdb-dev
+  APP_ENVIRONMENT: Development
 
 jobs:
   build_test_publish:
@@ -85,19 +86,23 @@ jobs:
           app-name: ${{ env.ENV_API_APP }}
           package: ${{ runner.temp }}/api
 
-      - name: Setup .NET 8 for migrations
+      - name: Setup .NET 8 for optional non-production migrations
+        if: env.APP_ENVIRONMENT != 'Production'
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x
 
-      - name: Install dotnet-ef
+      - name: Install dotnet-ef for optional non-production migrations
+        if: env.APP_ENVIRONMENT != 'Production'
         run: dotnet tool install --global dotnet-ef
 
-      - name: Restore for migrations
+      - name: Restore for optional non-production migrations
+        if: env.APP_ENVIRONMENT != 'Production'
         working-directory: IamMaturityStudio
         run: dotnet restore
 
       - name: Validate SQL server and database exist
+        if: env.APP_ENVIRONMENT != 'Production'
         uses: azure/cli@v2
         with:
           inlineScript: |
@@ -106,6 +111,7 @@ jobs:
             az sql db show --name "$ENV_SQL_DB" --resource-group "$ENV_RG" --server "$ENV_SQL_SERVER" --output none
 
       - name: Allow GitHub runner IP in SQL firewall
+        if: env.APP_ENVIRONMENT != 'Production'
         uses: azure/cli@v2
         with:
           inlineScript: |
@@ -121,7 +127,8 @@ jobs:
               --output none
             echo "SQL_FIREWALL_RULE_NAME=$RULE_NAME" >> "$GITHUB_ENV"
 
-      - name: Apply EF migrations
+      - name: Apply EF migrations (non-production only)
+        if: env.APP_ENVIRONMENT != 'Production'
         env:
           SQL_ADMIN_LOGIN: ${{ secrets.SQL_ADMIN_LOGIN }}
           SQL_ADMIN_PASSWORD: ${{ secrets.SQL_ADMIN_PASSWORD }}
@@ -133,7 +140,7 @@ jobs:
             --connection "Server=tcp:${ENV_SQL_SERVER}.database.windows.net,1433;Initial Catalog=${ENV_SQL_DB};Persist Security Info=False;User ID=${SQL_ADMIN_LOGIN};Password=${SQL_ADMIN_PASSWORD};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
 
       - name: Remove GitHub runner IP firewall rule
-        if: always()
+        if: always() && env.APP_ENVIRONMENT != 'Production'
         uses: azure/cli@v2
         with:
           inlineScript: |

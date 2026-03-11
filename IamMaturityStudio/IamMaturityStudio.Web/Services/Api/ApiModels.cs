@@ -8,6 +8,7 @@ public sealed record MeResponse(Guid UserId, string Name, string Email, IReadOnl
 public sealed record Organization(Guid Id, string Name, string? LogoUrl, string? ThemeJson, string? HeatmapBandsJson);
 public sealed record CreateOrgRequest(string Name, string? ThemeJson);
 public sealed record UpdateOrgBrandingRequest(string? LogoUrl, string? ThemeJson, string? HeatmapBands);
+public sealed record QuestionnaireSummary(Guid Id, string Name, string Version);
 public sealed record CreateAssessmentRequest(Guid OrgId, Guid QuestionnaireId, int AssessmentYear, string Name);
 public sealed record UpdateAssessmentStatusRequest(string Status);
 public sealed record InviteParticipantsRequest(IReadOnlyList<string> Emails, string Role);

@@ -55,12 +55,22 @@ public static class PersistenceServiceCollectionExtensions
         var fromAspNetCoreEnvVar = Environment.GetEnvironmentVariable("ASPNETCORE_ConnectionStrings__Default");
         if (!string.IsNullOrWhiteSpace(fromAspNetCoreEnvVar))
         {
+            if (env.IsProduction() && IsManagedIdentityConnectionString(fromAspNetCoreEnvVar))
+            {
+                return fromAspNetCoreEnvVar;
+            }
+
             return fromAspNetCoreEnvVar;
         }
 
         var fromConfig = config["ConnectionStrings:Default"];
         if (!string.IsNullOrWhiteSpace(fromConfig))
         {
+            if (env.IsProduction() && IsManagedIdentityConnectionString(fromConfig))
+            {
+                return fromConfig;
+            }
+
             return fromConfig;
         }
 
@@ -69,6 +79,11 @@ public static class PersistenceServiceCollectionExtensions
             var fromKeyVaultFallback = config["ConnectionStrings--Default"];
             if (!string.IsNullOrWhiteSpace(fromKeyVaultFallback))
             {
+                if (env.IsProduction() && IsManagedIdentityConnectionString(fromKeyVaultFallback))
+                {
+                    return fromKeyVaultFallback;
+                }
+
                 return fromKeyVaultFallback;
             }
         }
@@ -78,6 +93,47 @@ public static class PersistenceServiceCollectionExtensions
             "Set ASPNETCORE_ConnectionStrings__Default, or configure ConnectionStrings:Default in appsettings, " +
             "or provide ConnectionStrings--Default via Azure Key Vault configuration.");
     }
+
+    private static bool IsManagedIdentityConnectionString(string connectionString)
+    {
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            return false;
+        }
+
+        var builder = new DbConnectionStringBuilder
+        {
+            ConnectionString = connectionString
+        };
+
+        if (!TryGetValue(builder, "Authentication", out var authenticationValue))
+        {
+            return false;
+        }
+
+        var isActiveDirectoryDefault = string.Equals(authenticationValue?.Trim(), "Active Directory Default", StringComparison.OrdinalIgnoreCase);
+        if (!isActiveDirectoryDefault)
+        {
+            return false;
+        }
+
+        return !ContainsAnyKey(builder, "User ID", "UID", "Password", "PWD");
+    }
+
+    private static bool TryGetValue(DbConnectionStringBuilder builder, string key, out string? value)
+    {
+        if (!builder.TryGetValue(key, out var rawValue) || rawValue is null)
+        {
+            value = null;
+            return false;
+        }
+
+        value = rawValue.ToString();
+        return true;
+    }
+
+    private static bool ContainsAnyKey(DbConnectionStringBuilder builder, params string[] keys)
+        => keys.Any(builder.ContainsKey);
 
     public static string ResolveSqliteConnectionString(IConfiguration config, IHostEnvironment env)
     {
